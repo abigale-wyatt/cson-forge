@@ -720,12 +720,12 @@ bgc_io.F:291:69: warning: missing terminating ' character [-Winvalid-pp-token]
       |                                                                     ^
 2 warnings generated.
 mpifort  -c -O3 -fallow-argument-mismatch -o bgc_io.o bgc_io.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
+mpifort  -c -O3 -fallow-argument-mismatch -o init_scalars.o init_scalars.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 tides.fpp:189:18:
 
   189 |      &          + ptide_r(i,j,itide)*cos(omT)-ptide_i(i,j,
       |                  1
 Warning: Extension: Unary operator following arithmetic operator (use parentheses) at (1)
-mpifort  -c -O3 -fallow-argument-mismatch -o init_scalars.o init_scalars.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 mpifort  -c -O3 -fallow-argument-mismatch -o lmd_kpp.o lmd_kpp.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 omega.F:90:91: warning: missing terminating ' character [-Winvalid-pp-token]
    90 |               if (pipe_idx(i,j)>0) then         ! pipe_source removes branching because it's a parameter

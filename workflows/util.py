@@ -157,7 +157,7 @@ class ROMSInputs:
     def _generate_grid(self, **kwargs):
         out_path = self._forcing_filename("grd")
         self.grid.save(out_path)
-        self.paths["grid"] = out_path
+        self.paths["grd"] = out_path
         self.grid.to_yaml(self._yaml_filename("grd"))
 
     def _generate_initial_conditions(self, **kwargs):
