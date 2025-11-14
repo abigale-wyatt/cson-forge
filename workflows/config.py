@@ -211,12 +211,55 @@ def _paths_to_dict(dp: DataPaths) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     """
-    Simple CLI for inspecting detected system and configured paths.
+    Entry point for the config module command-line interface.
+
+    This CLI is primarily intended for inspecting the automatically
+    detected system tag (e.g., ``mac``, ``anvil``, ``perlmutter``)
+    and the resolved data/asset paths used by the library.
+
+    Commands
+    --------
+    show-paths
+        Print the detected system tag, hostname, and all configured
+        paths (source_data, input_data, scratch, logs, blueprints,
+        model_config). This is the default command if none is given.
+
+        Options
+        -------
+        --json
+            Emit the same information as a JSON document instead of
+            a human-readable text listing. This is useful for scripting
+            or debugging in automated environments.
+
+    Parameters
+    ----------
+    argv : list[str] or None, optional
+        Command-line arguments excluding the program name. If ``None``,
+        ``sys.argv[1:]`` is used. This parameter exists mainly to make
+        the function easy to test from Python code.
+
+    Returns
+    -------
+    int
+        Zero on success, non-zero on error or if usage information is shown.
 
     Examples
     --------
-    python -m yourpackage.config show-paths
-    python config.py show-paths --json
+    From a source checkout:
+
+    .. code-block:: bash
+
+        # human-readable
+        python config.py show-paths
+
+        # same as above, since show-paths is the default
+        python config.py
+
+        # JSON output
+        python config.py show-paths --json
+
+        # as a module (if installed as a package)
+        python -m yourpackage.config show-paths
     """
     if argv is None:
         argv = sys.argv[1:]
