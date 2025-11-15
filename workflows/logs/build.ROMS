@@ -1,8 +1,8 @@
 rsync -a /Users/mclong/codes/ucla-roms/src/*.F /Users/mclong/codes/ucla-roms/src/*.h  ../bld_wio-toy
 make show_tag
 cp -p *.h *.F *.opt Makedefs.inc ../bld_wio-toy 2>/dev/null || :
-cp -p rendered/*.F rendered/*.h  ../bld_wio-toy 2>/dev/null || :
-cp -p rendered/*.opt ../bld_wio-toy 2>/dev/null || :
+cp -p ../opt_wio-toy/*.F ../opt_wio-toy/*.h  ../bld_wio-toy 2>/dev/null || :
+cp -p ../opt_wio-toy/*.opt ../bld_wio-toy 2>/dev/null || :
 cd ../bld_wio-toy; make depend 2>/dev/null || :
 INFO: Automatically selected MPI_WRAPPER=mpifort based on COMPILER=gnu
 failed to generate dependency list with makedepf90, using python fallback
@@ -637,15 +637,15 @@ wec_frc.F:14:68: warning: missing terminating ' character [-Winvalid-pp-token]
 1 warning generated.
 mpifort  -c -O3 -fallow-argument-mismatch -o wec_frc.o wec_frc.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 mpifort  -c -O3 -fallow-argument-mismatch -o bgc_shared_vars.o bgc_shared_vars.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
-cdr_frc.fpp:282:38:
+bulk_frc.F:74:22: warning: empty character constant [-Winvalid-pp-token]
+   74 |       bulk_frc_opt = ''
+      |                      ^
+bulk_frc.F:210:57: cdr_frc.fpp:282:38:
 
   282 |                        cdr_prf(cidx,:,arg) = frac(i,j,icdr)
       |                                      1
 Warning: Legacy Extension: REAL array index at (1)
-bulk_frc.F:74:22: warning: empty character constant [-Winvalid-pp-token]
-   74 |       bulk_frc_opt = ''
-      |                      ^
-bulk_frc.F:210:57: warning: missing terminating ' character [-Winvalid-pp-token]
+warning: missing terminating ' character [-Winvalid-pp-token]
   210 |       ! DevinD commented out bulk_psiu,bulk_psit as wasn't linking?
       |                                                         ^
 bulk_frc.F:211:58: warning: missing terminating ' character [-Winvalid-pp-token]
@@ -720,12 +720,12 @@ bgc_io.F:291:69: warning: missing terminating ' character [-Winvalid-pp-token]
       |                                                                     ^
 2 warnings generated.
 mpifort  -c -O3 -fallow-argument-mismatch -o bgc_io.o bgc_io.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
-mpifort  -c -O3 -fallow-argument-mismatch -o init_scalars.o init_scalars.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 tides.fpp:189:18:
 
   189 |      &          + ptide_r(i,j,itide)*cos(omT)-ptide_i(i,j,
       |                  1
 Warning: Extension: Unary operator following arithmetic operator (use parentheses) at (1)
+mpifort  -c -O3 -fallow-argument-mismatch -o init_scalars.o init_scalars.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 mpifort  -c -O3 -fallow-argument-mismatch -o lmd_kpp.o lmd_kpp.fpp -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdff -lnetcdf -L/Users/mclong/miniconda3/envs/roms_env/lib -lnetcdf -L/Users/mclong/codes/MARBL/lib -lmarbl-gnu-mpi -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/miniconda3/envs/roms_env/include -I/Users/mclong/codes/MARBL/include/gnu-mpi
 omega.F:90:91: warning: missing terminating ' character [-Winvalid-pp-token]
    90 |               if (pipe_idx(i,j)>0) then         ! pipe_source removes branching because it's a parameter

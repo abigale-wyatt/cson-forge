@@ -312,7 +312,7 @@ def gen_inputs(
     return roms_inputs
 
 
-def render_source(parameters):
+def render_source(grid_name, parameters):
     """
     Stage and render model configuration templates using Jinja2.
 
@@ -324,10 +324,10 @@ def render_source(parameters):
 
     Workflow:
         1. Copies the contents of `config.paths.model_config` into a sibling
-           `rendered/` directory (creating it if necessary), excluding any
-           pre-existing `rendered` directory.
+           `../opt_$(GRID_NAME)/` directory (creating it if necessary), excluding any
+           pre-existing `../opt_$(GRID_NAME)` directory.
         2. Initializes a Jinja2 environment to process templates in the
-           rendered directory.
+           ../opt_$(GRID_NAME) directory.
         3. For each file listed in the `parameters` dictionary, loads it as
            a template and replaces template tokens with the provided values.
         4. Writes rendered content back to the same path, preserving file
@@ -360,17 +360,17 @@ def render_source(parameters):
         ... }
         >>> render_source(parameters)
         Rendered files:
-          - /path/to/model-configs/rendered/param.opt
-          - /path/to/model-configs/rendered/river_frc.opt
+          - /path/to/model-configs/opt_$(GRID_NAME)/param.opt
+          - /path/to/model-configs/opt_$(GRID_NAME)/river_frc.opt
     """
 
     # --- 1) stage a working copy into tmp/ ---
     src = config.paths.model_config.resolve()
-    dst = (src / "rendered").resolve()
+    dst = (src / f"../opt_{grid_name}").resolve()
 
     # copy everything except an existing tmp/
     shutil.copytree(
-        src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns("rendered")
+        src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns(f"opt_{grid_name}")
     )
 
     # --- 2) set up Jinja to load from tmp/ and render files in-place ---

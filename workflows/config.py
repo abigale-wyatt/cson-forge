@@ -40,7 +40,7 @@ def get_data_paths() -> DataPaths:
         scratch = home / "data" / "scratch"
 
     # Local project assets
-    model_config = here / "model-configs" / "roms-marbl-cson-default"
+    model_config = here / "model-configs" / "opt_base_roms-marbl-cson-default"
     logs_dir = here / "logs"
     blueprints_dir = here / "blueprints"
 
