@@ -1,0 +1,553 @@
+boundaries:
+  east: true
+  north: true
+  south: true
+  west: true
+end_time: '2012-02-01T00:00:00'
+grid_name: gulf-guinea-toy
+input_data_dir: /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy
+inputs:
+  bry:
+    input_args:
+      boundaries:
+        east: true
+        north: true
+        south: true
+        west: true
+      end_time: '2012-02-01T00:00:00'
+      source:
+        name: GLORYS
+        path: /Users/mclong/cson-forge-data/source_data/GLORYS_gulf-guinea-toy_2012-01-01-2012-02-01.nc
+      start_time: '2012-01-01T00:00:00'
+      type: physics
+      use_dask: true
+    method: roms_tools.setup.boundary_forcing.BoundaryForcing
+    obj:
+      adjust_depth_for_sea_surface_height: false
+      apply_2d_horizontal_fill: false
+      boundaries:
+        east: true
+        north: true
+        south: true
+        west: true
+      bypass_validation: false
+      ds: null
+      end_time: '2012-02-01T00:00:00'
+      grid:
+        N: 5
+        center_lat: -1.0
+        center_lon: 4.0
+        ds: null
+        hc: 300.0
+        hmin: 5.0
+        nx: 10
+        ny: 10
+        rot: 0
+        size_x: 4000
+        size_y: 2000
+        straddle: true
+        theta_b: 2.0
+        theta_s: 5.0
+        topography_source:
+          name: ETOPO5
+        verbose: false
+      model_reference_date: '2000-01-01T00:00:00'
+      source:
+        climatology: false
+        name: GLORYS
+        path: /Users/mclong/cson-forge-data/source_data/GLORYS_gulf-guinea-toy_2012-01-01-2012-02-01.nc
+      start_time: '2012-01-01T00:00:00'
+      type: physics
+      use_dask: true
+    paths:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201201.9.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_201202.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.bry.yaml
+  bry_bgc:
+    input_args:
+      boundaries:
+        east: true
+        north: true
+        south: true
+        west: true
+      end_time: '2012-02-01T00:00:00'
+      source:
+        climatology: true
+        name: UNIFIED
+        path: /Users/mclong/cson-forge-data/source_data/BGCdataset.nc
+      start_time: '2012-01-01T00:00:00'
+      type: bgc
+      use_dask: true
+    method: roms_tools.setup.boundary_forcing.BoundaryForcing
+    obj:
+      adjust_depth_for_sea_surface_height: false
+      apply_2d_horizontal_fill: false
+      boundaries:
+        east: true
+        north: true
+        south: true
+        west: true
+      bypass_validation: false
+      ds: null
+      end_time: '2012-02-01T00:00:00'
+      grid:
+        N: 5
+        center_lat: -1.0
+        center_lon: 4.0
+        ds: null
+        hc: 300.0
+        hmin: 5.0
+        nx: 10
+        ny: 10
+        rot: 0
+        size_x: 4000
+        size_y: 2000
+        straddle: true
+        theta_b: 2.0
+        theta_s: 5.0
+        topography_source:
+          name: ETOPO5
+        verbose: false
+      model_reference_date: '2000-01-01T00:00:00'
+      source:
+        climatology: true
+        name: UNIFIED
+        path: /Users/mclong/cson-forge-data/source_data/BGCdataset.nc
+      start_time: '2012-01-01T00:00:00'
+      type: bgc
+      use_dask: true
+    paths:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_bry_bgc_clim.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.bry_bgc.yaml
+  frc:
+    input_args:
+      end_time: '2012-02-01T00:00:00'
+      source:
+        name: ERA5
+        path: gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3
+      start_time: '2012-01-01T00:00:00'
+      type: physics
+      use_dask: true
+    method: roms_tools.setup.surface_forcing.SurfaceForcing
+    obj:
+      bypass_validation: false
+      coarse_grid_mode: auto
+      correct_radiation: true
+      ds: null
+      end_time: '2012-02-01T00:00:00'
+      grid:
+        N: 5
+        center_lat: -1.0
+        center_lon: 4.0
+        ds: null
+        hc: 300.0
+        hmin: 5.0
+        nx: 10
+        ny: 10
+        rot: 0
+        size_x: 4000
+        size_y: 2000
+        straddle: true
+        theta_b: 2.0
+        theta_s: 5.0
+        topography_source:
+          name: ETOPO5
+        verbose: false
+      model_reference_date: '2000-01-01T00:00:00'
+      source:
+        climatology: false
+        name: ERA5
+        path: gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3
+      start_time: '2012-01-01T00:00:00'
+      type: physics
+      use_coarse_grid: false
+      use_dask: true
+      wind_dropoff: false
+    paths:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201201.9.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_201202.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.frc.yaml
+  frc_bgc:
+    input_args:
+      end_time: '2012-02-01T00:00:00'
+      source:
+        climatology: true
+        name: UNIFIED
+        path: /Users/mclong/cson-forge-data/source_data/BGCdataset.nc
+      start_time: '2012-01-01T00:00:00'
+      type: bgc
+      use_dask: true
+    method: roms_tools.setup.surface_forcing.SurfaceForcing
+    obj:
+      bypass_validation: false
+      coarse_grid_mode: auto
+      correct_radiation: true
+      ds: null
+      end_time: '2012-02-01T00:00:00'
+      grid:
+        N: 5
+        center_lat: -1.0
+        center_lon: 4.0
+        ds: null
+        hc: 300.0
+        hmin: 5.0
+        nx: 10
+        ny: 10
+        rot: 0
+        size_x: 4000
+        size_y: 2000
+        straddle: true
+        theta_b: 2.0
+        theta_s: 5.0
+        topography_source:
+          name: ETOPO5
+        verbose: false
+      model_reference_date: '2000-01-01T00:00:00'
+      source:
+        climatology: true
+        name: UNIFIED
+        path: /Users/mclong/cson-forge-data/source_data/BGCdataset.nc
+      start_time: '2012-01-01T00:00:00'
+      type: bgc
+      use_coarse_grid: false
+      use_dask: true
+      wind_dropoff: false
+    paths:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_frc_bgc_clim.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.frc_bgc.yaml
+  grd:
+    input_args: {}
+    method: null
+    obj:
+      N: 5
+      center_lat: -1.0
+      center_lon: 4.0
+      ds: null
+      hc: 300.0
+      hmin: 5.0
+      nx: 10
+      ny: 10
+      rot: 0
+      size_x: 4000
+      size_y: 2000
+      straddle: true
+      theta_b: 2.0
+      theta_s: 5.0
+      topography_source:
+        name: ETOPO5
+      verbose: false
+    paths: /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_grd.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.grd.yaml
+  ic:
+    input_args:
+      bgc_source:
+        climatology: true
+        name: UNIFIED
+        path: /Users/mclong/cson-forge-data/source_data/BGCdataset.nc
+      ini_time: '2012-01-01T00:00:00'
+      source:
+        name: GLORYS
+        path: /Users/mclong/cson-forge-data/source_data/GLORYS_gulf-guinea-toy_2012-01-01-2012-02-01.nc
+      use_dask: true
+    method: roms_tools.setup.initial_conditions.InitialConditions
+    obj:
+      adjust_depth_for_sea_surface_height: false
+      allow_flex_time: false
+      bgc_source:
+        climatology: true
+        name: UNIFIED
+        path: /Users/mclong/cson-forge-data/source_data/BGCdataset.nc
+      bypass_validation: false
+      ds: null
+      grid:
+        N: 5
+        center_lat: -1.0
+        center_lon: 4.0
+        ds: null
+        hc: 300.0
+        hmin: 5.0
+        nx: 10
+        ny: 10
+        rot: 0
+        size_x: 4000
+        size_y: 2000
+        straddle: true
+        theta_b: 2.0
+        theta_s: 5.0
+        topography_source:
+          name: ETOPO5
+        verbose: false
+      horizontal_chunk_size: 50
+      ini_time: '2012-01-01T00:00:00'
+      model_reference_date: '2000-01-01T00:00:00'
+      source:
+        climatology: false
+        name: GLORYS
+        path: /Users/mclong/cson-forge-data/source_data/GLORYS_gulf-guinea-toy_2012-01-01-2012-02-01.nc
+      use_dask: true
+    paths:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_ic.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.ic.yaml
+  rivers:
+    input_args:
+      end_time: '2012-02-01T00:00:00'
+      include_bgc: true
+      start_time: '2012-01-01T00:00:00'
+    method: roms_tools.setup.river_forcing.RiverForcing
+    obj:
+      climatology: true
+      convert_to_climatology: if_any_missing
+      ds: null
+      end_time: '2012-02-01T00:00:00'
+      grid:
+        N: 5
+        center_lat: -1.0
+        center_lon: 4.0
+        ds: null
+        hc: 300.0
+        hmin: 5.0
+        nx: 10
+        ny: 10
+        rot: 0
+        size_x: 4000
+        size_y: 2000
+        straddle: true
+        theta_b: 2.0
+        theta_s: 5.0
+        topography_source:
+          name: ETOPO5
+        verbose: false
+      include_bgc: true
+      indices:
+        Bandama:
+        - - 9
+          - 3
+        Bnou:
+        - - 9
+          - 6
+        CUANZA:
+        - - 2
+          - 8
+        Cavally(Cavall:
+        - - 9
+          - 2
+        Como(Komo):
+        - - 9
+          - 3
+        Congo:
+        - - 3
+          - 8
+        Cross:
+        - - 9
+          - 7
+        Kouilou:
+        - - 4
+          - 8
+        M'Bei:
+        - - 6
+          - 7
+        Mono:
+        - - 10
+          - 5
+        Niari:
+        - - 4
+          - 8
+        Niger(IssaBer:
+        - - 9
+          - 6
+        Ntem:
+        - - 7
+          - 8
+        Nyanga:
+        - - 6
+          - 7
+        Nyong:
+        - - 9
+          - 7
+        Ogoou:
+        - - 6
+          - 7
+        Oum:
+        - - 10
+          - 5
+        Pra:
+        - - 9
+          - 4
+        Sanaga:
+        - - 9
+          - 7
+        StPaul:
+        - - 10
+          - 2
+        Tano:
+        - - 9
+          - 4
+        Volta:
+        - - 9
+          - 4
+        Wouri:
+        - - 9
+          - 7
+        overlap_1:
+        - - 9
+          - 6
+        overlap_2:
+        - - 6
+          - 7
+        overlap_3:
+        - - 9
+          - 7
+        overlap_4:
+        - - 9
+          - 4
+        overlap_5:
+        - - 4
+          - 8
+        overlap_6:
+        - - 9
+          - 3
+        overlap_7:
+        - - 10
+          - 5
+      model_reference_date: '2000-01-01T00:00:00'
+      source:
+        climatology: false
+        name: DAI
+      start_time: '2012-01-01T00:00:00'
+    paths:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.nc
+    paths_partitioned:
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.0.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.1.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.2.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.3.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.4.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.5.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.6.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.7.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.8.nc
+    - /Users/mclong/cson-forge-data/input_data/gulf-guinea-toy/roms_rivers.9.nc
+    yaml_file: /Users/mclong/codes/cson-forge/workflows/blueprints/gulf-guinea-toy.rivers.yaml
+np_eta: 5
+np_xi: 2
+roms_input_list:
+- grd
+- ic
+- frc
+- frc_bgc
+- bry
+- bry_bgc
+- rivers
+source_data:
+  clobber: false
+  datasets:
+  - GLORYS
+  - UNIFIED_BGC
+  end_time: '2012-02-01T00:00:00'
+  grid:
+    N: 5
+    center_lat: -1.0
+    center_lon: 4.0
+    ds: null
+    hc: 300.0
+    hmin: 5.0
+    nx: 10
+    ny: 10
+    rot: 0
+    size_x: 4000
+    size_y: 2000
+    straddle: true
+    theta_b: 2.0
+    theta_s: 5.0
+    topography_source:
+      name: ETOPO5
+    verbose: false
+  grid_name: gulf-guinea-toy
+  start_time: '2012-01-01T00:00:00'
+start_time: '2012-01-01T00:00:00'

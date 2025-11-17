@@ -11,11 +11,6 @@ import json
 import sys
 
 
-here = Path(__file__).resolve().parent
-
-default_opt_base_model = "opt_base_roms-marbl-cson-default"
-
-
 def _ensure_dir(path: Path) -> Path:
     """Create directory if needed and return it."""
     path.mkdir(parents=True, exist_ok=True)
@@ -24,20 +19,32 @@ def _ensure_dir(path: Path) -> Path:
 
 @dataclass(frozen=True)
 class DataPaths:
-    """Central object holding key paths for data and local assets."""
+    """
+    Central object holding key paths for data and local assets.
 
+    Includes:
+    - source_data
+    - input_data
+    - output_data
+    - code_root
+    - blueprints
+    - models_yaml
+    - builds_yaml
+    """
+
+    here: Path
     source_data: Path
     input_data: Path
-    scratch: Path
-    logs: Path
+    output_data: Path
+    code_root: Path
     blueprints: Path
-    model_config: Path
+    models_yaml: Path
+    builds_yaml: Path
 
 
 # --------------------------------------------------------
 # Hostname / system detection helpers
 # --------------------------------------------------------
-
 
 def _get_hostname() -> str:
     """Return lowercase hostname from multiple sources."""
@@ -53,26 +60,21 @@ def _detect_system() -> str:
     """
     Return a tag for the current compute environment.
 
-    Tags used by default:
+    Tags:
         - "mac"
         - "anvil"
         - "perlmutter"
         - "unknown"
 
-    You can add more tags/layouts via the SYSTEM_LAYOUT_REGISTRY.
+    Extendable via SYSTEM_LAYOUT_REGISTRY.
     """
     system = platform.system().lower()
     host = _get_hostname()
 
-    # macOS laptops
     if system == "darwin":
         return "mac"
-
-    # Anvil at Purdue (typical hostnames: anvil-*, etc.)
     if "anvil" in host:
         return "anvil"
-
-    # NERSC Perlmutter (login nodes, pm-cpu, pm-gpu, nidxxxxx)
     if (
         "perlmutter" in host
         or "pm-cpu" in host
@@ -80,7 +82,6 @@ def _detect_system() -> str:
         or host.startswith("nid")
     ):
         return "perlmutter"
-
     return "unknown"
 
 
@@ -88,8 +89,9 @@ def _detect_system() -> str:
 # System layout registry (pluggable)
 # --------------------------------------------------------
 
-# signature: layout_func(home: Path, env: dict) -> Tuple[Path, Path, Path]
-SystemLayoutFn = Callable[[Path, dict], Tuple[Path, Path, Path]]
+# Now each layout returns 4 paths:
+# (source_data, input_data, output_data, code_root)
+SystemLayoutFn = Callable[[Path, dict], Tuple[Path, Path, Path, Path]]
 SYSTEM_LAYOUT_REGISTRY: Dict[str, SystemLayoutFn] = {}
 
 
@@ -98,7 +100,7 @@ def register_system(tag: str) -> Callable[[SystemLayoutFn], SystemLayoutFn]:
     Decorator to register a system-specific path layout.
 
     The decorated function must accept (home: Path, env: dict)
-    and return (source_data, input_data, scratch).
+    and return (source_data, input_data, output_data, code_root).
     """
     tag = tag.lower()
 
@@ -109,52 +111,59 @@ def register_system(tag: str) -> Callable[[SystemLayoutFn], SystemLayoutFn]:
     return decorator
 
 
-# ------------------ Default layouts ----------------------
-
+# --------------------------------------------------------
+# Default system layouts
+# --------------------------------------------------------
 
 @register_system("mac")
-def _layout_mac(home: Path, env: dict) -> Tuple[Path, Path, Path]:
+def _layout_mac(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     base = home / "cson-forge-data"
     source_data = base / "source_data"
     input_data = base / "input_data"
-    scratch = base / "scratch"
-    return source_data, input_data, scratch
+    output_data = base / "output_data"
+    code_root = base / "codes"
+    return source_data, input_data, output_data, code_root
 
 
 @register_system("anvil")
-def _layout_anvil(home: Path, env: dict) -> Tuple[Path, Path, Path]:
+def _layout_anvil(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     work = Path(env.get("WORK", home / "work"))
     scratch_root = Path(env.get("SCRATCH", work / "scratch"))
     base = work / "cson-forge-data"
 
     source_data = base / "source_data"
     input_data = base / "input_data"
-    scratch = scratch_root / "cson-forge"
-    return source_data, input_data, scratch
+    output_data = scratch_root / "cson-forge-output"
+    code_root = base / "codes"
+    return source_data, input_data, output_data, code_root
 
 
 @register_system("perlmutter")
-def _layout_perlmutter(home: Path, env: dict) -> Tuple[Path, Path, Path]:
+def _layout_perlmutter(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     scratch_root = Path(env.get("SCRATCH", home / "scratch"))
-    source_data = scratch_root / "source_data"
-    input_data = scratch_root / "input_data"
-    scratch = scratch_root / "scratch_work"
-    return source_data, input_data, scratch
+    base = scratch_root / "cson-forge-data"
+
+    source_data = base / "source_data"
+    input_data = base / "input_data"
+    output_data = base / "output_data"
+    code_root = base / "codes"
+    return source_data, input_data, output_data, code_root
 
 
 @register_system("unknown")
-def _layout_unknown(home: Path, env: dict) -> Tuple[Path, Path, Path]:
+def _layout_unknown(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     base = home / "cson-forge-data"
+
     source_data = base / "source_data"
     input_data = base / "input_data"
-    scratch = base / "scratch"
-    return source_data, input_data, scratch
+    output_data = base / "output_data"
+    code_root = base / "codes"
+    return source_data, input_data, output_data, code_root
 
 
 # --------------------------------------------------------
-# Main factory
+# Path factory
 # --------------------------------------------------------
-
 
 def get_data_paths() -> DataPaths:
     """
@@ -164,113 +173,65 @@ def get_data_paths() -> DataPaths:
     home = Path(env.get("HOME", str(Path.home())))
     system_tag = _detect_system()
 
-    # Pick layout function from registry (fallback to "unknown")
     layout_fn = SYSTEM_LAYOUT_REGISTRY.get(
         system_tag, SYSTEM_LAYOUT_REGISTRY["unknown"]
     )
-    source_data, input_data, scratch = layout_fn(home, env)
 
-    # Project-local assets
-    model_config = here / "model-configs" / default_opt_base_model
-    logs_dir = here / "logs"
+    source_data, input_data, output_data, code_root = layout_fn(home, env)
+
+    here = Path(__file__).resolve().parent
     blueprints_dir = here / "blueprints"
+    models_yaml = here / "models.yml"
+    builds_yaml = here / "builds.yml"    
 
-    # Ensure dirs exist
-    for p in (source_data, input_data, scratch, logs_dir, blueprints_dir):
+    # ensure everything exists
+    for p in (source_data, input_data, output_data, code_root, blueprints_dir):
         _ensure_dir(p)
 
     return DataPaths(
+        here=here,
         source_data=source_data,
         input_data=input_data,
-        scratch=scratch,
-        logs=logs_dir,
+        output_data=output_data,
+        code_root=code_root,
         blueprints=blueprints_dir,
-        model_config=model_config,
+        models_yaml=models_yaml,
+        builds_yaml=builds_yaml,
     )
 
 
-# Initialize canonical instance (used by rest of code)
+# Initialize canonical instance
 paths = get_data_paths()
-
+system = _detect_system()
 
 # --------------------------------------------------------
-# Command-line interface
+# CLI
 # --------------------------------------------------------
-
 
 def _paths_to_dict(dp: DataPaths) -> dict:
     return {
         "source_data": str(dp.source_data),
         "input_data": str(dp.input_data),
-        "scratch": str(dp.scratch),
-        "logs": str(dp.logs),
+        "output_data": str(dp.output_data),
+        "code_root": str(dp.code_root),
         "blueprints": str(dp.blueprints),
-        "model_config": str(dp.model_config),
     }
 
 
 def main(argv: list[str] | None = None) -> int:
     """
-    Entry point for the config module command-line interface.
-
-    This CLI is primarily intended for inspecting the automatically
-    detected system tag (e.g., ``mac``, ``anvil``, ``perlmutter``)
-    and the resolved data/asset paths used by the library.
-
-    Commands
-    --------
-    show-paths
-        Print the detected system tag, hostname, and all configured
-        paths (source_data, input_data, scratch, logs, blueprints,
-        model_config). This is the default command if none is given.
-
-        Options
-        -------
-        --json
-            Emit the same information as a JSON document instead of
-            a human-readable text listing. This is useful for scripting
-            or debugging in automated environments.
-
-    Parameters
-    ----------
-    argv : list[str] or None, optional
-        Command-line arguments excluding the program name. If ``None``,
-        ``sys.argv[1:]`` is used. This parameter exists mainly to make
-        the function easy to test from Python code.
-
-    Returns
-    -------
-    int
-        Zero on success, non-zero on error or if usage information is shown.
-
-    Examples
-    --------
-    From a source checkout:
-
-    .. code-block:: bash
-
-        # human-readable
-        python config.py show-paths
-
-        # same as above, since show-paths is the default
-        python config.py
-
-        # JSON output
-        python config.py show-paths --json
-
-        # as a module (if installed as a package)
-        python -m yourpackage.config show-paths
+    CLI for inspecting detected compute environment and configured paths.
     """
     if argv is None:
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(
-        description="Inspect ROMS data path configuration."
+        description="Inspect CSON-Forge data path configuration."
     )
 
     subparsers = parser.add_subparsers(dest="command")
 
-    # show-paths subcommand (default)
+    # show-paths command
     show_parser = subparsers.add_parser(
         "show-paths",
         help="Show detected system and configured data paths.",
@@ -281,7 +242,6 @@ def main(argv: list[str] | None = None) -> int:
         help="Output paths as JSON instead of human-readable text.",
     )
 
-    # If no command is provided, default to show-paths
     if not argv:
         argv = ["show-paths"]
 
@@ -290,9 +250,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "show-paths":
         system_tag = _detect_system()
         hostname = _get_hostname()
-        dp = paths  # already initialized
+        dp = paths
 
-        if getattr(args, "json", False):
+        if args.json:
             payload = {
                 "system": system_tag,
                 "hostname": hostname,

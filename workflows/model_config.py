@@ -1,44 +1,106 @@
-from pathlib import Path
-from glob import glob
-import shutil
+from __future__ import annotations
 
-import stat
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from pathlib import Path
+from dataclasses import dataclass, field, asdict
+from typing import Callable, Dict, Any, List, Union, Optional
+
+import yaml
+
+import xarray as xr
 
 import config
-
-
-from pathlib import Path
-from glob import glob
-
-
-from dataclasses import dataclass, field
-
 import roms_tools as rt
-import config
 
 
-from pathlib import Path
-from glob import glob  # still here in case you use it elsewhere
-import roms_tools as rt
-import config
+# ---------------------------------------------------
+# Input registry (name -> metadata & handler)
+# ---------------------------------------------------
+
+
+class InputStep:
+    """Metadata for a single ROMS input generation step."""
+
+    def __init__(self, name: str, order: int, label: str, handler: Callable):
+        self.name = name  # canonical key used for filenames & paths
+        self.order = order  # execution order
+        self.label = label  # human-readable label
+        self.handler = handler  # function expecting `self` (ROMSInputs instance)
+
+
+INPUT_REGISTRY: Dict[str, InputStep] = {}
+
+
+def register_input(name: str, order: int, label: str | None = None):
+    """
+    Decorator to register an input-generation step.
+
+    Parameters
+    ----------
+    name : str
+        Key for this input (e.g., 'grd', 'ic', 'frc').
+        This will be used in filenames, and to index `input_objs[name]`.
+    order : int
+        Execution order in `generate_all()`. Lower numbers run first.
+    label : str, optional
+        Human-readable label for progress messages. If omitted, `name` is used.
+    """
+
+    def decorator(func: Callable):
+        step_label = label or name
+        INPUT_REGISTRY[name] = InputStep(
+            name=name,
+            order=order,
+            label=step_label,
+            handler=func,
+        )
+        return func
+
+    return decorator
+
+
+# ---------------------------------------------------
+# InputObj dataclass (per-input metadata)
+# ---------------------------------------------------
+
+
+@dataclass
+class InputObj:
+    """
+    Structured representation of a single ROMS input product.
+
+    Attributes
+    ----------
+    paths : Path | list[Path] | None
+        Path or list of paths to the generated NetCDF file(s), if applicable.
+    yaml_file : Path | None
+        Path to the YAML description written for this input, if any.
+    obj : Any
+        The underlying roms_tools (or grid / partition result) object used to
+        generate the input.
+    method : Callable | str | None
+        The constructor or function used to create `obj` (e.g., rt.InitialConditions).
+        For inputs that don't come from a constructor call (e.g., a pre-existing
+        grid object), this may be None or a descriptive string.
+    input_args : dict
+        The keyword arguments passed into `method` to construct `obj`.
+    """
+
+    paths: Optional[Union[Path, List[Path]]] = None
+    paths_partitioned: Optional[Union[Path, List[Path]]] = None
+    yaml_file: Optional[Path] = None
+    obj: Any = None
+    method: Optional[Union[Callable[..., Any], str]] = None
+    input_args: Dict[str, Any] = field(default_factory=dict)
+
+
+# ---------------------------------------------------
+# ROMSInputs dataclass
+# ---------------------------------------------------
 
 
 @dataclass
 class ROMSInputs:
     """Generate and manage ROMS input files for a given grid."""
-
-    # class-level constants
-    roms_input_list = [
-        "grd",
-        "ic",
-        "frc",
-        "frc_bgc",
-        "bry",
-        "bry_bgc",
-        "rivers",
-        "cdr",
-    ]
 
     # dataclass fields (constructor args)
     grid_name: str
@@ -49,120 +111,160 @@ class ROMSInputs:
     np_xi: int
     boundaries: dict
     source_data: object
+
+    # Make roms_input_list configurable per instance
+    roms_input_list: List[str] = field(
+        default_factory=lambda: [
+            "grd",
+            "ic",
+            "frc",
+            "frc_bgc",
+            "bry",
+            "bry_bgc",
+            "rivers",
+            "cdr",
+        ]
+    )
+
     use_dask: bool = True
     clobber: bool = False
 
     # derived / internal fields (not passed by user)
     input_data_dir: Path = field(init=False)
-    grid_yaml: Path = field(init=False)
     glorys_path: Path = field(init=False)
     bgc_forcing_path: Path = field(init=False)
-    paths: dict = field(init=False)
-    files_whole: list | None = field(init=False, default=None)
-    _files_partitioned: object | None = field(init=False, default=None)
-
+    input_objs: Dict[str, InputObj] = field(init=False)
+    bp_path: Path = field(init=False)
+    
     def __post_init__(self):
-        # paths to input directory & blueprint
+        # Path to input directory
         self.input_data_dir = Path(config.paths.input_data) / self.grid_name
         self.input_data_dir.mkdir(exist_ok=True)
 
-        self.grid_yaml = Path(config.paths.blueprints) / f"{self.grid_name}.yaml"
+        self.bp_path = config.paths.blueprints / f"model-inputs_{self.grid_name}.yml"
+        self.bp_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # source data paths from SourceData
+        # Source data paths from SourceData
         self.glorys_path = self.source_data.paths["GLORYS"]
         self.bgc_forcing_path = self.source_data.paths["UNIFIED_BGC"]
 
-        # initialize paths dict for all ROMS inputs
-        self.paths = {k: None for k in self.roms_input_list}
-
-        # ensure directory state
-        # TODO: push this into each input type so we can be more selective about
-        #       what to keep and what to replace
-        self._ensure_empty_or_clobber(self.clobber)
+        # Storage for detailed per-input objects
+        self.input_objs = {}
 
     # ----------------------------
     # Public API
     # ----------------------------
 
     def generate_all(self):
-        """Generate all ROMS input files for this grid."""
+        """
+        Generate all ROMS input files for this grid using the registered
+        steps whose names appear in `roms_input_list`, then partition and
+        write a blueprint.
 
-        # 1. Grid
-        print("\n▶️  [1/9] Writing ROMS grid...")
-        self._generate_grid()
+        If any names in `roms_input_list` lack registered handlers,
+        a ValueError is raised.
+        """
 
-        # 2. Initial conditions
-        print("▶️  [2/9] Generating initial conditions...")
-        self._generate_initial_conditions()
+        if not self._ensure_empty_or_clobber(self.clobber):
+            return self
 
-        # 3. Surface forcing (physics)
-        print("▶️  [3/9] Generating surface forcing (physics)...")
-        self._generate_surface_forcing()
+        # Sanity check
+        registry_keys = set(INPUT_REGISTRY.keys())
+        needed = set(self.roms_input_list)
+        missing = sorted(needed - registry_keys)
+        if missing:
+            raise ValueError(
+                "The following ROMS inputs are listed in `roms_input_list` but "
+                f"have no registered handlers: {', '.join(missing)}"
+            )
 
-        # 4. Surface forcing (BGC)
-        print("▶️  [4/9] Generating surface forcing (BGC)...")
-        self._generate_bgc_surface_forcing()
+        # Use only the selected steps
+        steps = [INPUT_REGISTRY[name] for name in self.roms_input_list]
+        steps.sort(key=lambda s: s.order)
+        total = len(steps) + 1
 
-        # 5. Boundary forcing (physics)
-        print("▶️  [5/9] Generating boundary forcing (physics)...")
-        self._generate_boundary_forcing()
+        # Execute
+        for idx, step in enumerate(steps, start=1):
+            print(f"\n▶️  [{idx}/{total}] {step.label}...")
+            step.handler(self, key=step.name)
 
-        # 6. Boundary forcing (BGC)
-        print("▶️  [6/9] Generating boundary forcing (BGC)...")
-        self._generate_bgc_boundary_forcing()
+        # Partition step
+        print(f"\n▶️  [{total}/{total}] Partitioning input files across tiles...")
+        self._partition_files()
 
-        # 7. River forcing
-        print("▶️  [7/9] Generating river forcing...")
-        self._generate_river_forcing()
-
-        # 8. CDR forcing
-        print("▶️  [8/9] Generating CDR forcing...")
-        self._generate_cdr_forcing()
-
-        # 9. Partition
-        print("\n📦  [9/9] Partitioning input files across tiles...")
-        self._partition_files(
-            np_eta=self.np_eta,
-            np_xi=self.np_xi,
-            output_dir=self.input_data_dir,
-            include_coarse_dims=False,
-        )
-
-        print("✅ All input files generated and partitioned.\n")
+        print("\n✅ All input files generated and partitioned.\n")
+        self._write_inputs_blueprint()
+        return self
 
     # ----------------------------
     # Internals
     # ----------------------------
 
-    def _ensure_empty_or_clobber(self, clobber: bool):
-        # TODO: this should not be all or nothing — push check/rm into each dataset
+    def _ensure_empty_or_clobber(self, clobber: bool) -> bool:
+        """
+        Ensure the input_data_dir is either empty or, if clobber=True,
+        remove existing .nc files.
+
+        Returns
+        -------
+        bool
+            True if it's safe to proceed with generation, False if we should
+            skip (e.g., files exist and clobber=False).
+        """
         existing = list(self.input_data_dir.glob("*.nc"))
+
         if existing and not clobber:
-            file_list = ", ".join(f.name for f in existing)
-            raise RuntimeError(
-                f"Input directory '{self.input_data_dir}' is not empty. "
-                f"Existing files: {file_list}. Use clobber=True to overwrite."
-            )
+            print(f"⚠️  Found existing ROMS input files in {self.input_data_dir}")
+            print("    Not overwriting because clobber=False.")
+            print("\nExiting without changes.\n")
+            return False
+
         if existing and clobber:
-            print(f"⚠️  Clobber=True: removing {len(existing)} existing .nc files...")
+            print(
+                f"⚠️  Clobber=True: removing {len(existing)} existing .nc files in "
+                f"{self.input_data_dir}..."
+            )
             for f in existing:
                 f.unlink()
 
-    def _forcing_filename(self, key):
-        return self.input_data_dir / f"roms_{key}"
+        return True
 
-    def _yaml_filename(self, key):
-        return config.paths.blueprints / (self.grid_name + f".{key}.yaml")
+    def _forcing_filename(self, key: str) -> Path:
+        """
+        Construct the NetCDF filename stem for a given input key.
+        """
+        return self.input_data_dir / f"roms_{key}.nc"
 
-    def _generate_grid(self, **kwargs):
-        out_path = self._forcing_filename("grd")
+    def _yaml_filename(self, key: str) -> Path:
+        """
+        Construct the YAML blueprint filename for a given input key.
+        """
+        return config.paths.blueprints / f"{self.grid_name}.{key}.yaml"
+
+    # ----------------------------
+    # Registry-backed generation steps
+    # ----------------------------
+
+    @register_input(name="grd", order=10, label="Writing ROMS grid")
+    def _generate_grid(self, key: str = "grd", **kwargs):
+        out_path = self._forcing_filename(key)
+        yaml_path = self._yaml_filename(key)
+
         self.grid.save(out_path)
-        self.paths["grd"] = out_path
-        self.grid.to_yaml(self._yaml_filename("grd"))
+        self.grid.to_yaml(yaml_path)
 
-    def _generate_initial_conditions(self, **kwargs):
-        self.ic = rt.InitialConditions(
-            grid=self.grid,
+        self.input_objs[key] = InputObj(
+            paths=out_path,
+            yaml_file=yaml_path,
+            obj=self.grid,
+            method=None,  # no roms_tools constructor here
+            input_args={},
+        )
+
+    @register_input(name="ic", order=20, label="Generating initial conditions")
+    def _generate_initial_conditions(self, key: str = "ic", **kwargs):
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
             ini_time=self.start_time,
             source={
                 "name": "GLORYS",
@@ -175,24 +277,44 @@ class ROMSInputs:
             },
             use_dask=self.use_dask,
         )
-        self.paths["ic"] = self.ic.save(self._forcing_filename("ic"))
-        self.ic.to_yaml(self._yaml_filename("ic"))
+        ic = rt.InitialConditions(grid=self.grid, **input_args)
+        paths = ic.save(self._forcing_filename(key))
+        ic.to_yaml(yaml_path)
 
-    def _generate_surface_forcing(self, **kwargs):
-        self.frc = rt.SurfaceForcing(
-            grid=self.grid,
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=ic,
+            method=rt.InitialConditions,
+            input_args=input_args,
+        )
+
+    @register_input(name="frc", order=30, label="Generating surface forcing (physics)")
+    def _generate_surface_forcing(self, key: str = "frc", **kwargs):
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
             start_time=self.start_time,
             end_time=self.end_time,
             source={"name": "ERA5"},
             type="physics",
             use_dask=self.use_dask,
         )
-        self.paths["frc"] = self.frc.save(self._forcing_filename("frc"))
-        self.frc.to_yaml(self._yaml_filename("frc"))
+        frc = rt.SurfaceForcing(grid=self.grid, **input_args)
+        paths = frc.save(self._forcing_filename(key))
+        frc.to_yaml(yaml_path)
 
-    def _generate_bgc_surface_forcing(self, **kwargs):
-        self.frc_bgc = rt.SurfaceForcing(
-            grid=self.grid,
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=frc,
+            method=rt.SurfaceForcing,
+            input_args=input_args,
+        )
+
+    @register_input(name="frc_bgc", order=40, label="Generating surface forcing (BGC)")
+    def _generate_bgc_surface_forcing(self, key: str = "frc_bgc", **kwargs):
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
             start_time=self.start_time,
             end_time=self.end_time,
             source={
@@ -203,14 +325,22 @@ class ROMSInputs:
             type="bgc",
             use_dask=self.use_dask,
         )
-        self.paths["frc_bgc"] = self.frc_bgc.save(self._forcing_filename("frc_bgc"))
-        self.frc_bgc.to_yaml(
-            self._yaml_filename("frc_bgc")
+        frc_bgc = rt.SurfaceForcing(grid=self.grid, **input_args)
+        paths = frc_bgc.save(self._forcing_filename(key))
+        frc_bgc.to_yaml(yaml_path)
+
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=frc_bgc,
+            method=rt.SurfaceForcing,
+            input_args=input_args,
         )
 
-    def _generate_boundary_forcing(self, **kwargs):
-        self.bry = rt.BoundaryForcing(
-            grid=self.grid,
+    @register_input(name="bry", order=50, label="Generating boundary forcing (physics)")
+    def _generate_boundary_forcing(self, key: str = "bry", **kwargs):
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
             start_time=self.start_time,
             end_time=self.end_time,
             boundaries=self.boundaries,
@@ -221,12 +351,22 @@ class ROMSInputs:
             type="physics",
             use_dask=self.use_dask,
         )
-        self.paths["bry"] = self.bry.save(self._forcing_filename("bry"))
-        self.bry.to_yaml(self._yaml_filename("bry"))
+        bry = rt.BoundaryForcing(grid=self.grid, **input_args)
+        paths = bry.save(self._forcing_filename(key))
+        bry.to_yaml(yaml_path)
 
-    def _generate_bgc_boundary_forcing(self, **kwargs):
-        self.bry_bgc = rt.BoundaryForcing(
-            grid=self.grid,
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=bry,
+            method=rt.BoundaryForcing,
+            input_args=input_args,
+        )
+
+    @register_input(name="bry_bgc", order=60, label="Generating boundary forcing (BGC)")
+    def _generate_bgc_boundary_forcing(self, key: str = "bry_bgc", **kwargs):
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
             start_time=self.start_time,
             end_time=self.end_time,
             boundaries=self.boundaries,
@@ -238,57 +378,184 @@ class ROMSInputs:
             type="bgc",
             use_dask=self.use_dask,
         )
-        self.paths["bry_bgc"] = self.bry_bgc.save(self._forcing_filename("bry_bgc"))
-        self.bry_bgc.to_yaml(
-            self._yaml_filename("bry_bgc")
+        bry_bgc = rt.BoundaryForcing(grid=self.grid, **input_args)
+        paths = bry_bgc.save(self._forcing_filename(key))
+        bry_bgc.to_yaml(yaml_path)
+
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=bry_bgc,
+            method=rt.BoundaryForcing,
+            input_args=input_args,
         )
 
-    def _generate_river_forcing(self, **kwargs):
-        self.rivers = rt.RiverForcing(
-            grid=self.grid,
+    @register_input(name="rivers", order=70, label="Generating river forcing")
+    def _generate_river_forcing(self, key: str = "rivers", **kwargs):
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
             start_time=self.start_time,
             end_time=self.end_time,
             include_bgc=True,
         )
-        self.paths["rivers"] = self.rivers.save(self._forcing_filename("rivers"))
-        self.rivers.to_yaml(self._yaml_filename("rivers"))
+        rivers = rt.RiverForcing(grid=self.grid, **input_args)
+        paths = rivers.save(self._forcing_filename(key))
+        rivers.to_yaml(yaml_path)
 
-    def _generate_cdr_forcing(self, cdr_list=None):
-        if cdr_list is None:
-            cdr_list = []
-        # TODO: cdr_list is a list of releases that are passed in
-        if cdr_list:
-            self.cdr = rt.CDRForcing(
-                grid=self.grid,
-                start_time=self.start_time,
-                end_time=self.end_time,
-                releases=cdr_list,
-            )
-            self.paths["cdr"] = self.cdr.save(self._forcing_filename("cdr"))
-            self.cdr.to_yaml(self._yaml_filename("cdr"))
-
-    def _partition_files(self, **kwargs):
-        # Build files_whole from the paths of generated ROMS inputs
-        self.files_whole = []
-
-        for k, v in self.paths.items():
-            if v is None:
-                continue
-            if isinstance(v, list):
-                self.files_whole.extend([p for p in v if p is not None])
-            else:
-                self.files_whole.append(v)
-        # partition files
-        self._files_partitioned = rt.partition_netcdf(
-            self.files_whole,
-            **kwargs,
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=rivers,
+            method=rt.RiverForcing,
+            input_args=input_args,
         )
 
+    @register_input(name="cdr", order=80, label="Generating CDR forcing")
+    def _generate_cdr_forcing(self, key: str = "cdr", cdr_list=None, **kwargs):
+        if cdr_list is None:
+            cdr_list = []
+        if not cdr_list:
+            return
 
-# Optional convenience function that mirrors your original API
+        yaml_path = self._yaml_filename(key)
+        input_args = dict(
+            start_time=self.start_time,
+            end_time=self.end_time,
+            releases=cdr_list,
+        )
+        cdr = rt.CDRForcing(grid=self.grid, **input_args)
+        paths = cdr.save(self._forcing_filename(key))
+        cdr.to_yaml(yaml_path)
+
+        self.input_objs[key] = InputObj(
+            paths=paths,
+            yaml_file=yaml_path,
+            obj=cdr,
+            method=rt.CDRForcing,
+            input_args=input_args,
+        )
+
+    # ----------------------------
+    # Partition step (not in registry)
+    # ----------------------------
+
+    def _partition_files(self, **kwargs):
+        """
+        Partition whole input files across tiles using roms_tools.partition_netcdf.
+
+        Uses the paths stored in `input_objs[...]` (for keys in roms_input_list)
+        to build the list of whole-field files, then stores the partitioning
+        result on `self.files_partitioned`. No YAML file is written for this
+        step, and it is not part of INPUT_REGISTRY.
+        """
+        input_args = dict(
+            np_eta=self.np_eta,
+            np_xi=self.np_xi,
+            output_dir=self.input_data_dir,
+            include_coarse_dims=False,
+        )
+
+        for name in self.roms_input_list:
+            self.input_objs[name].paths_partitioned = rt.partition_netcdf(
+                self.input_objs[name].paths, **input_args,
+                )
+
+    # ----------------------------
+    # Blueprint writer
+    # ----------------------------
+
+    def _write_inputs_blueprint(self):
+        """
+        Serialize a summary of ROMSInputs state to a YAML blueprint:
+
+            blueprints/model-inputs_{grid_name}.yml
+
+        Contents include:
+          - files_whole
+          - files_partitioned
+          - input_data_dir
+          - roms_input_list
+          - input_objs
+
+        Paths are converted to strings, dataclasses are expanded to dicts,
+        xarray Datasets/DataArrays are replaced with a short placeholder,
+        and non-serializable objects (e.g., roms_tools callables) are
+        represented via repr()/qualname.
+        """
+
+        XR_TYPES = (xr.Dataset, xr.DataArray)
+
+        def _serialize(obj: Any) -> Any:
+            from datetime import date, datetime
+            from dataclasses import is_dataclass, asdict as dc_asdict
+
+            # Drop/replace xarray objects explicitly
+            if XR_TYPES and isinstance(obj, XR_TYPES):
+                # You can also return None here if you prefer to omit them silently
+                return None
+
+            # Only treat *instances* of dataclasses this way, not classes/types.
+            if is_dataclass(obj) and not isinstance(obj, type):
+                return _serialize(dc_asdict(obj))
+
+            if isinstance(obj, Path):
+                return str(obj)
+
+            if isinstance(obj, (str, int, float, bool)) or obj is None:
+                return obj
+
+            if isinstance(obj, (date, datetime)):
+                return obj.isoformat()
+
+            if isinstance(obj, dict):
+                return {k: _serialize(v) for k, v in obj.items()}
+
+            if isinstance(obj, (list, tuple, set)):
+                return [_serialize(v) for v in obj]
+
+            # For callables (e.g., rt.InitialConditions in InputObj.method),
+            # store a readable identifier instead of the raw object.
+            if callable(obj):
+                qualname = getattr(obj, "__qualname__", None)
+                mod = getattr(obj, "__module__", None)
+                if qualname and mod:
+                    return f"{mod}.{qualname}"
+                return repr(obj)
+
+            # Last resort: string representation
+            return repr(obj)
+
+        # Build a pared-down snapshot rather than dumping the entire dataclass
+        raw = dict(
+            grid_name=self.grid_name,
+            start_time=self.start_time,
+            end_time=self.end_time,
+            np_eta=self.np_eta,
+            np_xi=self.np_xi,
+            boundaries=self.boundaries,
+            source_data=self.source_data,
+            input_data_dir=self.input_data_dir,
+            roms_input_list=self.roms_input_list,
+            inputs=self.input_objs,
+        )
+
+        data = _serialize(raw)
+
+        with self.bp_path.open("w") as f:
+            yaml.safe_dump(data, f, sort_keys=True)
+
+        print(f"📄  Wrote ROMSInputs blueprint to {self.bp_path}")
+
+
+# ---------------------------------------------------
+# Optional convenience function that mirrors original API
+# ---------------------------------------------------
+
+
 def gen_inputs(
     grid_name,
     grid,
+    roms_input_list,
     start_time,
     end_time,
     np_eta,
@@ -297,9 +564,13 @@ def gen_inputs(
     source_data,
     clobber: bool = False,
 ):
+    """
+    Convenience wrapper to construct ROMSInputs and call generate_all().
+    """
     roms_inputs = ROMSInputs(
         grid_name=grid_name,
         grid=grid,
+        roms_input_list=roms_input_list,
         start_time=start_time,
         end_time=end_time,
         np_eta=np_eta,
@@ -310,104 +581,3 @@ def gen_inputs(
     )
     roms_inputs.generate_all()
     return roms_inputs
-
-
-def render_source(grid_name, parameters):
-    """
-    Stage and render model configuration templates using Jinja2.
-
-    This function creates a working copy of the model configuration directory,
-    renders selected files in place using the provided parameter dictionary,
-    and preserves original file permissions. It is typically used to generate
-    model-specific ROMS/MARBL configuration files with substituted variables
-    before compilation or execution.
-
-    Workflow:
-        1. Copies the contents of `config.paths.model_config` into a sibling
-           `../opt_$(GRID_NAME)/` directory (creating it if necessary), excluding any
-           pre-existing `../opt_$(GRID_NAME)` directory.
-        2. Initializes a Jinja2 environment to process templates in the
-           ../opt_$(GRID_NAME) directory.
-        3. For each file listed in the `parameters` dictionary, loads it as
-           a template and replaces template tokens with the provided values.
-        4. Writes rendered content back to the same path, preserving file
-           permissions.
-        5. Prints a list of rendered files to stdout.
-
-    Args:
-        parameters (dict[str, dict[str, Any]]):
-            A mapping of relative filenames (e.g. "param.opt") to dictionaries
-            of template variables and their values. For example:
-                {
-                    "param.opt": {"NP_XI": 5, "NP_ETA": 2},
-                    "river_frc.opt": {"nriv": 190},
-                }
-
-    Raises:
-        FileNotFoundError: If a template file listed in `parameters` is missing
-            from the staged configuration directory.
-        jinja2.exceptions.UndefinedError: If a template references a variable
-            not defined in its corresponding context dictionary.
-
-    Returns:
-        None
-            Prints a list of successfully rendered files to the console.
-
-    Example:
-        >>> parameters = {
-        ...     "param.opt": {"NP_XI": 5, "NP_ETA": 2},
-        ...     "river_frc.opt": {"nriv": 190},
-        ... }
-        >>> render_source(parameters)
-        Rendered files:
-          - /path/to/model-configs/opt_$(GRID_NAME)/param.opt
-          - /path/to/model-configs/opt_$(GRID_NAME)/river_frc.opt
-    """
-
-    # --- 1) stage a working copy into tmp/ ---
-    src = config.paths.model_config.resolve()
-    dst = (src / f"../opt_{grid_name}").resolve()
-
-    # copy everything except an existing tmp/
-    shutil.copytree(
-        src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns(f"opt_{grid_name}")
-    )
-
-    # --- 2) set up Jinja to load from tmp/ and render files in-place ---
-    env = Environment(
-        loader=FileSystemLoader(str(dst)),
-        undefined=StrictUndefined,  # error on missing variables
-        autoescape=False,  # plain text files
-        keep_trailing_newline=True,
-        trim_blocks=False,
-        lstrip_blocks=False,
-    )
-
-    rendered = []
-
-    for relname, context in parameters.items():
-        relpath = Path(relname)
-        target = dst / relpath
-        if not target.exists():
-            raise FileNotFoundError(f"Template not found in tmp/: {target}")
-
-        # load by path relative to dst
-        template = env.get_template(str(relpath.as_posix()))
-        rendered_text = template.render(**context)
-
-        # preserve original permissions when writing back
-        try:
-            orig_mode = target.stat().st_mode
-        except FileNotFoundError:
-            orig_mode = None
-
-        target.write_text(rendered_text)
-
-        if orig_mode is not None:
-            target.chmod(stat.S_IMODE(orig_mode))
-
-        rendered.append(str(target))
-
-    print("Rendered files:")
-    for f in rendered:
-        print("  -", f)

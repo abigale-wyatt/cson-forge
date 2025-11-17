@@ -1,0 +1,14 @@
+
+roms-marbl:
+  opt_base_dir: opt_base_roms-marbl-cson-default  
+  conda_env: roms_env
+  repos:
+    roms: 
+      url: https://github.com/CWorthy-ocean/ucla-roms.git
+      # default directory name under CODES_ROOT (if ROMS_ROOT not set)
+      default_dirname: ucla-roms
+    marbl:
+      url: https://github.com/marbl-ecosys/MARBL.git
+      default_dirname: MARBL
+      # tag or branch to checkout after clone
+      checkout: marbl0.45.0

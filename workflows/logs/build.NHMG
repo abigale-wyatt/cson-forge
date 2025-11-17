@@ -1,2 +1,0 @@
-INFO: Automatically selected MPI_WRAPPER=mpifort based on COMPILER=gnu
-make: Nothing to be done for `all'.
