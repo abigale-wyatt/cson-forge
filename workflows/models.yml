@@ -1,4 +1,4 @@
-roms-marbl:
+roms-marbl.no-tides:
   opt_base_dir: opt_base/opt_base_roms-marbl-cson-default
   conda_env: roms_env
 
@@ -13,28 +13,33 @@ roms-marbl:
       checkout: marbl0.45.0          # tag or branch to check out
 
   inputs:
-    ic:
-      source: GLORYS
-      bgc_source: UNIFIED
-      climatology: true
+    grid: 
+      topography_source: ETOPO5
+      
+    initial_conditions:
+      source:
+        name: GLORYS
+      bgc_source: 
+        name: UNIFIED
+        climatology: true
 
-    frc:
+    surface_forcing:
       source: 
         name: ERA5
       type: physics
 
-    frc_bgc:
+    surface_forcing_bgc:
       type: bgc      
       source: 
         name: UNIFIED
         climatology: true
 
-    bry:
+    boundary_forcing:
       type: physics      
       source:
         name: GLORYS
 
-    bry_bgc:
+    boundary_forcing_bgc:
       type: bgc      
       source:
         name: UNIFIED
