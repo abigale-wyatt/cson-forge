@@ -19,8 +19,8 @@ dependencies:
   - holoviews
   - ipykernel
   - ipywidgets
-  - jupyter-book
   - jupyterlab
+  - jupyter-book
   - mamba
   - matplotlib
   - nc-time-axis
@@ -28,7 +28,7 @@ dependencies:
   - numpy>2,<2.3
   - pandas
   - papermill
-  - pip
+  - pip    
   - pop-tools
   - pre-commit==3.8.0
   - pytest

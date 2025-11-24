@@ -140,3 +140,6 @@ dask-worker-space/
 workflows/builds/*/exe/*
 *.o
 *.mod
+
+# MyST build outputs
+_build

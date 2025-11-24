@@ -1,0 +1,39 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+
+project:
+  title: C-SON Forge
+  description: "Create new C-Star domains"
+  license: Apache-2.0
+  open_access: true
+  #authors:
+  #  - name: "[C]Worthy"
+  #    website: https://cworthy.org
+  #    github: https://github.com/CWorthy-Ocean/cson-forge  
+    
+  toc:
+    - file: README
+    - file: workflows/docs_overview.md    
+    - title: Get Started
+      children:
+        - file: workflows/docs_installation.md
+        - file: workflows/docs_configuration.md
+        - file: workflows/docs_models.md
+        - file: workflows/docs_source-data.md
+        - file: workflows/docs_grid-making.md
+    - title: Grid Recipes
+      children:
+        - file: workflows/grid_index.md      
+        - file: workflows/source-data.ipynb      
+        - file: workflows/grid_wio-toy.ipynb
+        - file: workflows/grid_gulf-guinea-toy.ipynb
+    - title: Analysis
+      children:
+        - file: workflows/analysis_index.md
+        - file: workflows/analysis_cson-plot.ipynb
+    
+site:
+  template: book-theme
+  options:
+    favicon: favicon.ico
+    logo: cworthy-logo.png
