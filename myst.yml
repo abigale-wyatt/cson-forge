@@ -12,7 +12,7 @@ project:
   #    github: https://github.com/CWorthy-Ocean/cson-forge  
     
   toc:
-    - file: README
+    - file: README.md
     - file: workflows/docs_overview.md    
     - title: Get Started
       children:
