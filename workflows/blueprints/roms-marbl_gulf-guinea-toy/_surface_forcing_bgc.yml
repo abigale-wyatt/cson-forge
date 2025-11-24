@@ -1,5 +1,5 @@
 ---
-roms_tools_version: 3.1.3.dev13+g2830da646
+roms_tools_version: 3.2.0
 ---
 Grid:
   nx: 10
@@ -15,6 +15,7 @@ Grid:
   hc: 300.0
   topography_source:
     name: ETOPO5
+  mask_shapefile: null
   hmin: 5.0
 SurfaceForcing:
   start_time: '2012-01-01T00:00:00'

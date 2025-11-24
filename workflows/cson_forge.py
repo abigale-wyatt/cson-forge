@@ -1403,6 +1403,7 @@ def _generate_slurm_script(
     queue: str,
     wallclock_time: str,
     run_dir: Path,
+    conda_env: str,
     log_func: Callable[[str], None] = print,
 ) -> Path:
     """
@@ -1422,6 +1423,8 @@ def _generate_slurm_script(
         Wallclock time limit (format: HH:MM:SS).
     run_dir : Path
         Directory where the batch script and output files will be written.
+    conda_env : str
+        Name of the conda environment to run the model in.
     log_func : callable, optional
         Logging function for messages.
     
@@ -1445,8 +1448,11 @@ def _generate_slurm_script(
 # Change to the run directory
 cd {run_dir}
 
-# Run the model
-{run_command}
+# Initialize conda (if not already initialized)
+eval "$(conda shell.bash hook)"
+
+# Run the model in the conda environment
+conda run -n {conda_env} {run_command}
 """
     
     script_path.write_text(script_content)
@@ -1610,21 +1616,36 @@ def run(
     run_command_updated = f"{run_command_updated} > {log_file} 2>&1"
     
     if cluster_type == ClusterType.LOCAL:
-        log_func(f"Running model locally: {run_command_updated}")
+        conda_env = model_spec.conda_env
+        log_func(f"Running model locally in conda env '{conda_env}': {run_command_updated}")
         log_func(f"Working directory: {run_dir}")
         log_func(f"Log file: {log_file}")
         
-        # Run the command using subprocess - output is redirected to log file via shell
-        # Use shell=True to handle the redirect properly
-        process = subprocess.Popen(
-            run_command_updated,
-            cwd=str(run_dir),
-            shell=True,
-            text=True,
-        )
+        # Use conda run to execute in the correct environment
+        # Parse the command (without the redirect) to get the base command
+        import shlex
+        # Remove the redirect from the command string
+        if " > " in run_command_updated:
+            cmd_part = run_command_updated.rsplit(" > ", 1)[0]
+        else:
+            cmd_part = run_command_updated
         
-        # Wait for process to complete
-        return_code = process.wait()
+        # Build conda run command
+        conda_cmd = ["conda", "run", "-n", conda_env, "--no-capture-output"] + shlex.split(cmd_part)
+        
+        # Run the command with redirection handled by subprocess
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        with log_file.open("w") as log_f:
+            process = subprocess.Popen(
+                conda_cmd,
+                cwd=str(run_dir),
+                stdout=log_f,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+            
+            # Wait for process to complete
+            return_code = process.wait()
         
         if return_code != 0:
             raise RuntimeError(
@@ -1655,6 +1676,7 @@ def run(
             queue=queue,
             wallclock_time=wallclock_time,
             run_dir=run_dir,
+            conda_env=model_spec.conda_env,
             log_func=log_func,
         )
         
@@ -1836,13 +1858,19 @@ class OcnModel:
                 "You must call OcnModel.generate_inputs() "
                 "before building the model."
             )
-        self.executable = build(
+        exe_path = build(
             model_spec=self.spec,
             grid_name=self.grid_name,
             input_data_path=self.inputs.input_data_dir,
             parameters=parameters,
             clean=clean,
         )
+        if exe_path is None:
+            raise RuntimeError(
+                "Build completed but executable was not found. "
+                "Check the build logs for errors."
+            )
+        self.executable = exe_path
         return self.executable
 
     def run(
@@ -1880,6 +1908,7 @@ class OcnModel:
                 "You must call OcnModel.generate_inputs() "
                 "before running the model."
             )
+
         if self.executable is None:
             raise RuntimeError(
                 "You must call OcnModel.build() "

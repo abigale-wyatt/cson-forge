@@ -19,6 +19,7 @@ dependencies:
   - holoviews
   - ipykernel
   - ipywidgets
+  - gdown
   - jupyterlab
   - jupyter-book
   - mamba

@@ -1,6 +1,10 @@
 # Overview
 
-C-SON Forge streamlines the creation of ROMS-MARBL domains by automating the generation of all required input files—including grids, initial conditions, boundary and surface forcing, rivers, and tidal forcing—from a variety of observational and reanalysis datasets. The tool produces **blueprint** YAML files that capture the complete configuration and file paths for each domain, enabling reproducible model setups that can be integrated into C-Star workflows.
+C-SON Forge streamlines the creation of ROMS-MARBL domains by automating the generation of all required input files using [ROMS Tools](https://roms-tools.readthedocs.io/en/latest/index.html). 
+The files include grids, initial conditions, boundary and surface forcing, rivers, and tidal forcing—from a variety of observational and reanalysis datasets. 
+
+
+The tool produces **blueprint** YAML files that capture the complete configuration and file paths for each domain, enabling reproducible model setups that can be integrated into C-Star workflows.
 
 ## Key Features
 
