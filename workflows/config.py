@@ -63,8 +63,8 @@ def _detect_system() -> str:
 
     Tags:
         - "mac"
-        - "anvil"
-        - "perlmutter"
+        - "RCAC_anvil"
+        - "NERSC_perlmutter"
         - "unknown"
 
     Extendable via SYSTEM_LAYOUT_REGISTRY.
@@ -74,15 +74,15 @@ def _detect_system() -> str:
 
     if system == "darwin":
         return "mac"
-    if "anvil" in host:
-        return "anvil"
+    if "RCAC_anvil" in host:
+        return "RCAC_anvil"
     if (
-        "perlmutter" in host
+        "NERSC_perlmutter" in host
         or "pm-cpu" in host
         or "pm-gpu" in host
         or host.startswith("nid")
     ):
-        return "perlmutter"
+        return "NERSC_perlmutter"
     return "unknown"
 
 
@@ -126,8 +126,8 @@ def _layout_mac(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     return source_data, input_data, run_dir, code_root
 
 
-@register_system("anvil")
-def _layout_anvil(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
+@register_system("RCAC_anvil")
+def _layout_RCAC_anvil(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     work = Path(env.get("WORK", home / "work"))
     scratch_root = Path(env.get("SCRATCH", work / "scratch"))
     base = work / "cson-forge-data"
@@ -139,8 +139,8 @@ def _layout_anvil(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     return source_data, input_data, run_dir, code_root
 
 
-@register_system("perlmutter")
-def _layout_perlmutter(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
+@register_system("NERSC_perlmutter")
+def _layout_NERSC_perlmutter(home: Path, env: dict) -> Tuple[Path, Path, Path, Path]:
     scratch_root = Path(env.get("SCRATCH", home / "scratch"))
     base = scratch_root / "cson-forge-data"
 
