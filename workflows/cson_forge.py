@@ -1934,8 +1934,8 @@ class OcnModel:
         """
         if not skip_inputs_check and self.inputs is None:
             raise RuntimeError(
-                "You must call OcnModel.generate_inputs() "
-                "before building the model."
+                "You must call OcnModel.generate_inputs() before building the model. "
+                "If you wish to skip this check, pass skip_inputs_check=True to build()."
             )
 
         use_conda = config.system == "MacOS"
