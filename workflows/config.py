@@ -69,20 +69,19 @@ def _detect_system() -> str:
 
     Extendable via SYSTEM_LAYOUT_REGISTRY.
     """
-    system = platform.system().lower()
-    host = _get_hostname()
 
+    system = platform.system().lower()
     if system == "darwin":
         return "mac"
-    if "RCAC_anvil" in host:
+    
+    host = _get_hostname()
+    if "anvil" in host:
         return "RCAC_anvil"
-    if (
-        "NERSC_perlmutter" in host
-        or "pm-cpu" in host
-        or "pm-gpu" in host
-        or host.startswith("nid")
-    ):
+
+    # Check NERSC_HOST environment variable for Perlmutter
+    if os.environ.get("NERSC_HOST", "").lower() == "perlmutter":
         return "NERSC_perlmutter"
+
     return "unknown"
 
 
