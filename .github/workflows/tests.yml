@@ -45,6 +45,18 @@ jobs:
         echo "CONDA_EXE=$MICROMAMBA_PATH" >> $GITHUB_ENV
         echo "Set CONDA_EXE=$MICROMAMBA_PATH"
         
+        # Create a conda wrapper script so 'conda' command is available
+        # This is needed because the build function runs 'conda list' and other conda commands
+        mkdir -p $HOME/bin
+        cat > $HOME/bin/conda << 'EOF'
+        #!/bin/bash
+        # Wrapper script to make conda commands work with micromamba
+        exec micromamba "$@"
+        EOF
+        chmod +x $HOME/bin/conda
+        echo "$HOME/bin" >> $GITHUB_PATH
+        echo "Created conda wrapper at $HOME/bin/conda"
+        
     - name: Run tests
       shell: bash -l {0}
       working-directory: ${{ github.workspace }}
