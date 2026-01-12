@@ -10,35 +10,54 @@ project:
      
   toc:
     - file: README.md
-    - file: workflows/docs/overview.md    
+    - file: docs/overview.md    
     
     - title: Get Started
       children:
-        - file: workflows/docs/installation.md
-        - file: workflows/docs/configuration.md
-        - file: workflows/docs/models.md
-        - file: workflows/docs/source-data.md
-        - file: workflows/docs/grid-making.md
-        - file: workflows/docs/api-ref.md
+        - file: docs/installation.md
+        - file: docs/machine-config.md
     
-    - title: Make a Model Blueprint
+    - title: SourceData
       children:
-        - file: workflows/generate-models/index.md      
-        - file: workflows/generate-models/source-data.ipynb      
-        - file: workflows/generate-models/california-current-system.ipynb
-        - file: workflows/generate-models/gulf-guinea-toy.ipynb
-        - file: workflows/generate-models/hvalfjörður-iceland.ipynb
-        - file: workflows/generate-models/wio-toy.ipynb
-    
-    - title: Use Model Blueprint
+        - file: docs/source-data-intro.md
+        - file: docs/source-data-example.md
+        - file: docs/source-data-developer.md
+
+    - title: InputData
+      children: 
+        - file: docs/InputData-intro.md
+        - file: docs/InputData-RomsMarblInputData.md
+
+    - title: ModelSpec
+
+    - title: CStarSpecBuilder
       children:
-        - file: workflows/docs/catalog.ipynb  
+        - file: docs/CStarSpecBuilder-overview.md
+        - file: workflows/generate-models/CStarSpecBuilder-demo.ipynb
+
+    - title: CStarSpecEngine
+      children:
+        - file: workflows/generate-models/CStarSpecEngine-build-one.ipynb
+        - file: workflows/generate-models/CStarSpecEngine-build-all.ipynb
+
+    - title: Catalog
+      children:      
+        - file: docs/catalog.ipynb
 
     - title: Analysis
       children:
         - file: workflows/analysis/index.md
         - file: workflows/analysis/cson-plot.ipynb
     
+    - title: Reference
+      children:
+        - file: docs/reference-machines.md      
+        - file: docs/reference-models-yml.md
+        - file: docs/reference-domains.md
+        - file: docs/reference-settings-compile-time.md
+        - file: docs/reference-settings-run-time.md
+        - file: docs/reference-blueprint.md
+        - file: docs/reference-blueprint-settings.md
 site:
   template: book-theme
   options:

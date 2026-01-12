@@ -3,19 +3,11 @@ cson_forge: A utility for generating regional oceanographic modeling domains
 and spawning reproducible C-Star workflows.
 """
 
-from . import model
+from . import models
 from . import config
+from . import source_data
+from . import settings
+from ._core import CstarSpecBuilder, CstarSpecEngine
 
-# OcnModel and source_data may not be available if dependencies aren't installed
-try:
-    from ._core import OcnModel
-except ImportError:
-    OcnModel = None
-
-try:
-    from . import source_data
-except ImportError:
-    source_data = None
-
-__all__ = ["OcnModel", "source_data", "model", "config"]
+__all__ = ["source_data", "models", "config", "settings", "CstarSpecBuilder", "CstarSpecEngine"]
 

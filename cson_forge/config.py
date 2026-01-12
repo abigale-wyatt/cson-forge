@@ -262,13 +262,46 @@ def load_machine_config(system_tag: str, machines_yaml_path: Path) -> MachineCon
         # If there's any error loading the config, return empty config
         return MachineConfig()
 
+# =========================================================
+# Model execution (run) functions
+# =========================================================
+
+
+class ClusterType:
+    """Constants for cluster/scheduler types."""
+    LOCAL = "LocalCluster"
+    SLURM = "SLURMCluster"
+    PBS = "PBSCluster"  # For future extensibility
+
+
+def _default_cluster_type(system_tag: str) -> str:
+    """
+    Return the default cluster type based on the system tag.
+    
+    Parameters
+    ----------
+    system_tag : str
+        System tag (e.g., "MacOS", "NERSC_perlmutter").
+    
+    Returns
+    -------
+    str
+        "LocalCluster" for MacOS/unknown, "SLURMCluster" for other systems.
+    """
+    if system_tag in ["MacOS", "unknown"]:
+        return ClusterType.LOCAL
+    elif system_tag in ["RCAC_anvil", "NERSC_perlmutter"]:
+        return ClusterType.SLURM
+    else:
+        raise NotImplementedError(f"Cluster type not implemented for system: {system_tag}")
+
 
 # Initialize canonical instance
 paths = get_data_paths()
 system = _detect_system()
 system_id = system  # Alias for compatibility
 machine = load_machine_config(system, paths.machines_yaml)
-
+cluster_type = _default_cluster_type(system)
 
 
 # --------------------------------------------------------

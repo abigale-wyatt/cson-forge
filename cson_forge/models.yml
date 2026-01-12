@@ -1,37 +1,48 @@
 cson_roms-marbl_v0.1:
-  opt_base_dir: opt_base/cson_roms-marbl_v0.1
-  conda_env: roms_env
+  templates:
+    compile_time:
+      location: "{{ config.path.model_configs }}/{{ model.name }}/templates/compile-time"
+      filter:
+        files:
+        - bgc.opt.j2
+        - blk_frc.opt.j2
+        - cdr_frc.opt.j2
+        - cppdefs.opt.j2
+        - diagnostics.opt.j2
+        - ocean_vars.opt.j2
+        - param.opt.j2
+        - river_frc.opt.j2
+        - surf_flux.opt.j2
+        - tides.opt.j2
+        - tracers.opt.j2
+        - Makefile
 
+    run_time:
+      location: "{{ config.path.model_configs }}/{{ model.name }}/templates/run-time"
+      filter:
+        files:
+        - roms.in.j2
+        - marbl_in
+        - marbl_tracer_output_list
+        - marbl_diagnostic_output_list
+
+  settings:
+    properties:
+      n_tracers: 34
+    compile_time:
+      _default_config_yaml: "{{ config.path.model_configs }}/{{ model.name }}/templates/compile-time-defaults.yml"
+    run_time:
+      _default_config_yaml: "{{ config.path.model_configs }}/{{ model.name }}/templates/run-time-defaults.yml"
+  
   code:
     roms:
       location: https://github.com/CWorthy-ocean/ucla-roms.git
+      branch: main
 
     marbl:
       location: https://github.com/marbl-ecosys/MARBL.git
       commit: marbl0.45.0  
   
-  run_time:
-    #location: /anvil/scratch/x-seilerman/2node_test_domain
-    filter:
-      files:
-      - roms.in
-      - marbl_in
-      - marbl_tracer_output_list
-  
-  compile_time:
-    #location: /anvil/scratch/x-seilerman/2node_test_domain/compile
-    filter:
-      files:
-      - bgc.opt
-      - bulk_frc.opt
-      - cdr_frc.opt
-      - cppdefs.opt
-      - cstar_output.opt
-      - ocean_vars.opt
-      - param.opt
-      - river_frc.opt
-      - Makefile
-
   inputs:
     grid: 
       topography_source: ETOPO5
@@ -43,36 +54,33 @@ cson_roms-marbl_v0.1:
         name: UNIFIED
         climatology: true
 
-    surface_forcing:
-      source: 
-        name: ERA5
-      type: physics
-      correct_radiation: true
+    forcing:
+      surface:
+        - source: 
+            name: ERA5
+          type: physics
+          correct_radiation: true
+        - source: 
+            name: UNIFIED
+            climatology: true
+          type: bgc
+          
+      boundary:
+        - source:
+            name: GLORYS
+          type: physics
+        - source: 
+            name: UNIFIED
+            climatology: true
+          type: bgc
 
-    surface_forcing_bgc:
-      type: bgc      
-      source: 
-        name: UNIFIED
-        climatology: true
+      tidal:
+        - source:
+            name: TPXO
+          ntides: 15
 
-    boundary_forcing:
-      type: physics      
-      source:
-        name: GLORYS
-
-    boundary_forcing_bgc:
-      type: bgc      
-      source:
-        name: UNIFIED
-        climatology: true
-
-    tidal_forcing:
-      source:
-        name: TPXO
-      ntides: 15
-
-    rivers:
-      include_bgc: true
-      source:
-        name: DAI
-        climatology: false
+      river:
+        - source:
+            name: DAI
+            climatology: false
+          include_bgc: true

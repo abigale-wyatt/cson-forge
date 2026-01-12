@@ -8,6 +8,7 @@ dependencies:
   - black
   - cartopy
   - cmocean
+  - compilers
   - copernicusmarine
   - coverage
   - dask
@@ -25,8 +26,10 @@ dependencies:
   - jupyter-book
   - mamba
   - matplotlib
+  - mpich
   - nc-time-axis
   - netCDF4
+  - netcdf-fortran
   - numpy>2,<2.3
   - pandas
   - papermill

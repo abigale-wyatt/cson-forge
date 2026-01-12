@@ -11,7 +11,7 @@ fi
 
 REPO_URL="https://github.com/CWorthy-ocean/C-Star.git"
 BRANCH="orchestration"
-CODE_ROOT=$(python -c "import sys; sys.path.insert(0, './workflows'); import config; print(config.paths.code_root)")
+CODE_ROOT=$(python -c "import cson_forge.config as config; paths = config.get_data_paths(); print(paths.code_root)")
 REPO_DIR="$CODE_ROOT/C-Star"
 CONDA_ENV="cson-forge"
 
@@ -29,15 +29,17 @@ else
     echo "Cloning C-Star repository..."
     git clone -b "$BRANCH" "$REPO_URL" "$REPO_DIR"
 fi
-exit
+
 # Activate conda environment and install
 echo "Activating conda environment: $CONDA_ENV"
 echo "Installing C-Star in editable mode..."
 
-
 # Activate conda environment and run pip install
-eval "$(conda shell.bash hook)"
-conda activate "$CONDA_ENV"
+# Note: In CI, conda may be a wrapper around micromamba
+if command -v conda &> /dev/null; then
+    eval "$(conda shell.bash hook)" 2>/dev/null || true
+    conda activate "$CONDA_ENV" 2>/dev/null || true
+fi
 
 cd "$REPO_DIR"
 pip install -e .

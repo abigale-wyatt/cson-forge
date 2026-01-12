@@ -443,6 +443,10 @@ def _prepare_srtm15(self: SourceData) -> Path:
     return path
 
 
+@register_dataset("ERA5")
+def _prepare_era5(self: SourceData) -> Path:
+    pass
+
 # ---------------------------
 # TPXO handler (user-provided dataset)
 # ---------------------------

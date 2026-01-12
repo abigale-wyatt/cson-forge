@@ -6,7 +6,7 @@ blueprints directory.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import yaml
 import pandas as pd
 
@@ -35,21 +35,37 @@ class BlueprintCatalog:
             blueprints_dir = config.paths.blueprints
         self.blueprints_dir = Path(blueprints_dir)
     
-    def find_blueprint_files(self) -> List[Path]:
+    def find_blueprint_files(self, stage: Optional[str] = None) -> List[Path]:
         """
-        Recursively find all blueprint_*.yml files in the blueprints directory.
+        Recursively find all blueprint files in the blueprints directory.
+        
+        Parameters
+        ----------
+        stage : str, optional
+            Filter by blueprint stage (preconfig, postconfig, build, run).
+            If None, returns all blueprint files.
         
         Returns
         -------
         List[Path]
-            List of paths to blueprint YAML files.
+            List of paths to blueprint YAML files matching pattern B_*.yml.
         """
-        blueprint_files = list(self.blueprints_dir.rglob("blueprint_*.yml"))
-        # Filter out checkpoint directories
+        if stage:
+            pattern = f"B_*_{stage}.yml"
+        else:
+            pattern = "B_*.yml"
+        
+        blueprint_files = list(self.blueprints_dir.rglob(pattern))
+        # Filter out checkpoint directories and run blueprints with datestr
         blueprint_files = [
             f for f in blueprint_files 
-            if ".ipynb_checkpoints" not in str(f)
+            if ".ipynb_checkpoints" not in str(f) and not f.name.endswith("_run_*.yml")
         ]
+        # Also find run blueprints with datestr pattern
+        if not stage or stage == "run":
+            run_files = list(self.blueprints_dir.rglob("B_*_run_*.yml"))
+            blueprint_files.extend([f for f in run_files if ".ipynb_checkpoints" not in str(f)])
+        
         return sorted(blueprint_files)
     
     def load_blueprint(self, blueprint_path: Path) -> Dict[str, Any]:
@@ -79,9 +95,7 @@ class BlueprintCatalog:
         with blueprint_path.open("r") as f:
             data = yaml.safe_load(f) or {}
         
-        # Apply path template resolution (convert templates to actual paths)
-        from .cson_forge import _apply_path_templates_to_value
-        return _apply_path_templates_to_value(data, template_to_path=True)
+        return data
     
     def load_grid_kwargs(self, grid_yaml_path: Path) -> Dict[str, Any]:
         """
@@ -119,85 +133,146 @@ class BlueprintCatalog:
         
         return grid_data["Grid"]
     
-    def load(self) -> pd.DataFrame:
+    def _extract_model_and_grid_name(self, blueprint_name: str) -> Tuple[Optional[str], Optional[str]]:
         """
-        Load all blueprints and return a pandas DataFrame with all data
-        necessary to instantiate a cson_forge.OcnModel object.
+        Extract model name and grid name from blueprint name.
+        
+        Blueprint names follow the pattern: {model_name}_{grid_name}
+        e.g., "cson_roms-marbl_v0.1_test-tiny" -> ("cson_roms-marbl_v0.1", "test-tiny")
+        
+        Parameters
+        ----------
+        blueprint_name : str
+            The blueprint name field.
+        
+        Returns
+        -------
+        tuple[Optional[str], Optional[str]]
+            (model_name, grid_name) tuple. Returns (None, None) if pattern doesn't match.
+        """
+        if not blueprint_name:
+            return None, None
+        
+        # Try to split on the last underscore
+        parts = blueprint_name.rsplit("_", 1)
+        if len(parts) == 2:
+            return parts[0], parts[1]
+        
+        return None, None
+    
+    def load(self, stage: Optional[str] = "postconfig") -> pd.DataFrame:
+        """
+        Load all blueprints and return a pandas DataFrame with all data.
+        
+        Parameters
+        ----------
+        stage : str, optional
+            Blueprint stage to load (preconfig, postconfig, build, run).
+            Defaults to "postconfig" which has the most complete data.
         
         Returns
         -------
         pd.DataFrame
             DataFrame with columns:
-            - model_name: Model name from model_spec
-            - grid_name: Grid name
-            - grid_kwargs: Dictionary of grid parameters (from grid YAML)
-            - boundaries: Dictionary of boundary configuration
-            - start_time: Simulation start time
-            - end_time: Simulation end time
-            - np_eta: Number of processors in eta direction
-            - np_xi: Number of processors in xi direction
+            - model_name: Model name extracted from blueprint name
+            - grid_name: Grid name extracted from blueprint name
+            - blueprint_name: Full blueprint name
+            - description: Blueprint description
+            - start_time: Simulation start time (valid_start_date)
+            - end_time: Simulation end time (valid_end_date)
+            - np_eta: Number of processors in eta direction (partitioning.n_procs_y)
+            - np_xi: Number of processors in xi direction (partitioning.n_procs_x)
+            - grid_kwargs: Dictionary of grid parameters (from _grid.yml if available)
             - blueprint_path: Path to the blueprint YAML file
-            - grid_yaml_path: Path to the grid YAML file
-            - input_data_dir: Path to input data directory
+            - grid_yaml_path: Path to the grid YAML file (_grid.yml) if found
+            - input_data_dir: Path to input data directory (from grid.data[0].location)
+            - stage: Blueprint stage
         
         Notes
         -----
         Blueprints that cannot be parsed or are missing required fields
         will be skipped with a warning message.
         """
-        blueprint_files = self.find_blueprint_files()
+        blueprint_files = self.find_blueprint_files(stage=stage)
         
         records = []
         for bp_file in blueprint_files:
             try:
                 blueprint = self.load_blueprint(bp_file)
                 
-                # Extract required fields
-                grid_name = blueprint.get("grid_name")
-                model_spec = blueprint.get("model_spec", {})
-                model_name = model_spec.get("name")
-                
-                if not grid_name or not model_name:
-                    print(f"⚠️  Skipping {bp_file}: missing grid_name or model_spec.name")
+                # Extract blueprint name and parse model/grid names
+                blueprint_name = blueprint.get("name")
+                if not blueprint_name:
+                    print(f"⚠️  Skipping {bp_file}: missing 'name' field")
                     continue
                 
-                # Get grid YAML path and load grid_kwargs
+                model_name, grid_name = self._extract_model_and_grid_name(blueprint_name)
+                if not model_name or not grid_name:
+                    print(f"⚠️  Skipping {bp_file}: could not extract model/grid name from '{blueprint_name}'")
+                    continue
+                
+                # Extract dates
+                start_time = blueprint.get("valid_start_date")
+                end_time = blueprint.get("valid_end_date")
+                
+                # Extract partitioning
+                partitioning = blueprint.get("partitioning", {})
+                np_xi = partitioning.get("n_procs_x") if isinstance(partitioning, dict) else None
+                np_eta = partitioning.get("n_procs_y") if isinstance(partitioning, dict) else None
+                
+                # Extract description
+                description = blueprint.get("description")
+                
+                # Try to find and load grid YAML file
                 grid_yaml_path = None
                 grid_kwargs = None
-                if "inputs" in blueprint and "grid" in blueprint["inputs"]:
-                    grid_input = blueprint["inputs"]["grid"]
-                    if "yaml_file" in grid_input:
-                        grid_yaml_path = Path(grid_input["yaml_file"])
-                        try:
-                            grid_kwargs = self.load_grid_kwargs(grid_yaml_path)
-                        except (FileNotFoundError, KeyError) as e:
-                            print(f"⚠️  Skipping {bp_file}: could not load grid kwargs: {e}")
-                            continue
+                # Look for _grid.yml in the same directory as the blueprint
+                grid_yaml_path = bp_file.parent / "_grid.yml"
+                if grid_yaml_path.exists():
+                    try:
+                        grid_kwargs = self.load_grid_kwargs(grid_yaml_path)
+                    except (FileNotFoundError, KeyError, ValueError) as e:
+                        # Grid YAML might not exist or have different format, that's OK
+                        pass
                 
-                if grid_kwargs is None:
-                    print(f"⚠️  Skipping {bp_file}: grid_kwargs not available")
-                    continue
+                # Extract input data directory from grid location
+                input_data_dir = None
+                grid_data = blueprint.get("grid", {})
+                if isinstance(grid_data, dict):
+                    data_list = grid_data.get("data", [])
+                    if data_list and isinstance(data_list[0], dict):
+                        grid_location = data_list[0].get("location")
+                        if grid_location:
+                            try:
+                                input_data_dir = Path(grid_location).parent
+                            except Exception:
+                                pass
                 
-                # Extract other fields
-                boundaries = blueprint.get("boundaries", {})
-                start_time = blueprint.get("start_time")
-                end_time = blueprint.get("end_time")
-                np_eta = blueprint.get("np_eta")
-                np_xi = blueprint.get("np_xi")
-                input_data_dir = blueprint.get("input_data_dir")
+                # Determine stage from filename
+                file_stage = None
+                if "_preconfig" in bp_file.name:
+                    file_stage = "preconfig"
+                elif "_postconfig" in bp_file.name:
+                    file_stage = "postconfig"
+                elif "_build" in bp_file.name:
+                    file_stage = "build"
+                elif "_run" in bp_file.name:
+                    file_stage = "run"
                 
                 records.append({
                     "model_name": model_name,
                     "grid_name": grid_name,
-                    "grid_kwargs": grid_kwargs,
-                    "boundaries": boundaries,
+                    "blueprint_name": blueprint_name,
+                    "description": description,
                     "start_time": start_time,
                     "end_time": end_time,
                     "np_eta": np_eta,
                     "np_xi": np_xi,
+                    "grid_kwargs": grid_kwargs,
                     "blueprint_path": bp_file,
-                    "grid_yaml_path": grid_yaml_path,
-                    "input_data_dir": input_data_dir,
+                    "grid_yaml_path": grid_yaml_path if grid_yaml_path and grid_yaml_path.exists() else None,
+                    "input_data_dir": str(input_data_dir) if input_data_dir else None,
+                    "stage": file_stage,
                 })
                 
             except Exception as e:
