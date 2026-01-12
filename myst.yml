@@ -29,6 +29,10 @@ project:
         - file: docs/InputData-RomsMarblInputData.md
 
     - title: ModelSpec
+      children:
+        - file: docs/model-spec-intro.md
+        - file: docs/model-spec-settings.md
+        - file: docs/model-spec-example.ipynb
 
     - title: CStarSpecBuilder
       children:
