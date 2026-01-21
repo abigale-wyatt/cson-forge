@@ -15,7 +15,7 @@ compile_time:
     nbgc_flx: 2
     interp_frc: 1
   blk_frc:
-    interp_frc: 1
+    interp_frc: 0
   cppdefs:
     obc_west: true
     obc_east: true
@@ -100,7 +100,7 @@ compile_time:
     nrpf: 7
     diag_uv: false
     diag_trc: false
-    diag_pflx: true
+    diag_pflx: false
     timescale: 86400
     diag_prec: nf90_double
   tracers:
@@ -132,9 +132,9 @@ run_time:
       ndtfast: 60
       ninfo: 1
     s_coord:
-      theta_s: 5.0
-      theta_b: 2.0
-      tcline: 300.0
+      theta_s: null
+      theta_b: null
+      tcline: null
     grid:
       grid_file: null
     forcing:
@@ -148,7 +148,7 @@ run_time:
       visc4: 0.0
       rho0: 1000.0
     output_root_name:
-      output_root_name: /Users/mclong/cson-forge-data/cson-forge-run/cson_roms-marbl_v0.1_test-tiny_20120101-20120102
+      output_root_name: /Users/mclong/cson-forge-data/cson-forge-run/cson_roms-marbl_v0.1_test-tiny_20120101-20120102/output/cson_roms-marbl_v0.1_test-tiny_20120101-20120102
     vertical_mixing:
       akv: 0.0
       akt_default: 0.0

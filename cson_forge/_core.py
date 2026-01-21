@@ -236,16 +236,6 @@ class CstarSpecBuilder(BaseModel):
         return config.paths.run_dir / self.casename
 
     @property
-    def default_runtime_params(self) -> cstar_models.RuntimeParameterSet:
-        """Return default runtime parameters based on builder's start_date, end_date, and output_dir."""
-        return cstar_models.RuntimeParameterSet(
-            start_date=self.start_date,
-            end_date=self.end_date,
-            checkpoint_frequency="1d",
-            output_dir=self.run_output_dir,
-        )
-
-    @property
     def blueprint_dir(self) -> Path:
         """Return the blueprint directory path."""
         return config.paths.blueprints / self.name
@@ -253,12 +243,12 @@ class CstarSpecBuilder(BaseModel):
     @property
     def compile_time_code_dir(self) -> Path:
         """Return the compile-time code output directory path."""
-        return config.paths.here / "builds" / self.name / "opt"
+        return config.paths.here / "builds" / self.name / "compile-time"
     
     @property
     def run_time_code_dir(self) -> Path:
         """Return the run-time code output directory path."""
-        return config.paths.here / "builds" / self.name / "opt"
+        return config.paths.here / "builds" / self.name / "run-time"
 
     def persist(self) -> None:
         """
@@ -1384,8 +1374,7 @@ class CstarSpecBuilder(BaseModel):
             
             # Create inputs instance
             blueprint_elements, settings_compile_time, settings_run_time = input_data.RomsMarblInputData(
-                model_name=self.model_name,
-                grid_name=self.grid_name,
+                domain_name=self.name,
                 start_date=self.start_date,
                 end_date=self.end_date,
                 model_spec=self._model_spec,
@@ -1492,7 +1481,7 @@ class CstarSpecBuilder(BaseModel):
             casename = self.casename,   
         )
         self._settings_run_time["roms.in"]["output_root_name"] = dict( 
-            output_root_name = str(self.run_output_dir),
+            output_root_name = str(self.run_output_dir / "output" / self.casename),
         )
         
         # Set timestepping defaults (will compute dt from CFL if dt is None)
@@ -1956,7 +1945,7 @@ class CstarSpecBuilder(BaseModel):
             If cstar_simulation is not initialized (build() must be called first).
         """
         if self._cstar_simulation is None:
-            raise ValueError("cstar_simulation is not initialized. Call build() first.")
+            raise ValueError("cstar_simulation is not initialized. Call build() first.")        
         self._cstar_simulation.pre_run()
     
     def post_run(self) -> None:

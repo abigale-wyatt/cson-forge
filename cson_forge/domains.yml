@@ -1,30 +1,3 @@
-_test-tiny:
-  description: "Test tiny"
-  model_name: "cson_roms-marbl_v0.1"
-  grid_name: "test-tiny"
-  start_time: "2012-01-01"
-  end_time: "2012-01-02"
-  grid_kwargs:
-    nx: 6
-    ny: 2
-    size_x: 500
-    size_y: 1000
-    center_lon: 0
-    center_lat: 55
-    rot: 10
-    N: 3
-    theta_s: 5.0
-    theta_b: 2.0
-    hc: 250.0
-  open_boundaries:
-    south: false
-    east: true
-    north: true
-    west: false
-  partitioning:
-    n_procs_x: 2
-    n_procs_y: 1
-
 ccs-12km:
   description: "California Current System"
   model_name: "cson_roms-marbl_v0.1"
@@ -39,8 +12,8 @@ ccs-12km:
     center_lon: -134.5
     center_lat: 39.6
     rot: 33.3
-    N: 100
-    hc: 250
+    N: 60
+    hc: 250.0
     theta_s: 6.0
     theta_b: 6.0
     verbose: true

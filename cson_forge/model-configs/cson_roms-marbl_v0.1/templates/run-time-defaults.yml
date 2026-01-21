@@ -12,9 +12,9 @@ roms.in:
     ninfo: 1
 
   s_coord:
-    theta_s: 5.0
-    theta_b: 2.0
-    tcline: 300.0  # meters
+    theta_s: null # Set dynamically from grid file
+    theta_b: null # Set dynamically from grid file
+    tcline: null  # Set dynamically from grid file
 
   grid:
     grid_file: null  # Set dynamically from generated grid file

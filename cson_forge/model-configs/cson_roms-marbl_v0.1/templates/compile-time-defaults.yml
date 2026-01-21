@@ -18,7 +18,7 @@ bgc:
   interp_frc: 1
 
 blk_frc:
-  interp_frc: 1
+  interp_frc: 0
 
 cppdefs:
   # Boundary condition flags
@@ -111,7 +111,7 @@ diagnostics:
   nrpf: 7
   diag_uv: false
   diag_trc: false
-  diag_pflx: true
+  diag_pflx: false  # Disabled: partitioned diagnostics output has bug (missing .nc extension)
   timescale: 86400  # 1*3600*24 seconds
   diag_prec: 'nf90_double'
 

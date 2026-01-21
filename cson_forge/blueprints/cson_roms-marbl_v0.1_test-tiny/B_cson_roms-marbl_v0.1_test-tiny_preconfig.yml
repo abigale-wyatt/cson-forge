@@ -9,8 +9,8 @@ code:
     documentation: ''
     locked: false
     location: https://github.com/CWorthy-ocean/ucla-roms.git
-    commit: ''
-    branch: main
+    commit: 84f4ee7886e9ee4c33b3248b35c955551f3b9c06
+    branch: ''
   run_time:
     documentation: ''
     locked: false
@@ -53,5 +53,5 @@ forcing:
 partitioning:
   documentation: ''
   locked: false
-  n_procs_x: 2
+  n_procs_x: 1
   n_procs_y: 1
