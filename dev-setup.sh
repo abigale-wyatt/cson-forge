@@ -326,8 +326,9 @@ if [ ! -f "$ENV_YML" ]; then
 elif [ ! -f "$CSTAR_PYPROJECT" ]; then
   echo "Warning: C-Star pyproject.toml not found at $CSTAR_PYPROJECT, skipping roms_tools version pinning"
 else
-  # Extract version from environment.yml (format: "roms-tools==3.4.0" or "roms-tools=3.4.0")
-  ROMS_TOOLS_VERSION=$(grep -E "^[[:space:]]*-[[:space:]]*roms-tools[=]" "$ENV_YML" | sed -E 's/^[[:space:]]*-[[:space:]]*roms-tools[=]+([0-9.]+).*/\1/' | head -1)
+  # Extract version from environment.yml (format: "roms-tools==3.3.0" or "roms-tools=3.3.0")
+  # Matches both conda format (2 spaces) and pip format (4 spaces)
+  ROMS_TOOLS_VERSION=$(grep -E "^[[:space:]]{2,4}-[[:space:]]*roms-tools[=]" "$ENV_YML" | sed -E 's/^[[:space:]]*-[[:space:]]*roms-tools[=]+([0-9.]+).*/\1/' | head -1)
   
   if [ -z "$ROMS_TOOLS_VERSION" ]; then
     echo "Warning: Could not extract roms-tools version from environment.yml, skipping version pinning"

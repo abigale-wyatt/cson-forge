@@ -34,6 +34,7 @@ jobs:
         create-args: |
           python=${{ matrix.python-version }}
         cache-environment-key: micromamba-${{ matrix.python-version }}-${{ runner.os }}
+        post-cleanup: false
         
     - name: Set up conda for build tests
       shell: bash -l {0}

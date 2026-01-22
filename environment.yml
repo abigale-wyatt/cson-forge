@@ -38,10 +38,11 @@ dependencies:
   - pyyaml>=6.0
   - rasterio
   - rioxarray
-  - roms-tools==3.4.0
   - scipy
   - seawater
   - xarray
   - xesmf
   - xgcm
   - zarr
+  - pip:
+    - roms-tools==3.3.0
