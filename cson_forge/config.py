@@ -290,15 +290,6 @@ def _default_cluster_type(system_tag: str) -> str:
     else:
         raise NotImplementedError(f"Cluster type not implemented for system: {system_tag}")
 
-
-# Initialize canonical instance
-paths = get_data_paths()
-system = _detect_system()
-system_id = system  # Alias for compatibility
-machine = load_machine_config(system, paths.machines_yaml)
-cluster_type = _default_cluster_type(system)
-
-
 # --------------------------------------------------------
 # Environment and Machine Information
 # --------------------------------------------------------
@@ -458,6 +449,15 @@ def main(argv: list[str] | None = None) -> int:
 
     parser.print_help()
     return 1
+
+
+
+# Initialize canonical instance
+paths = get_data_paths()
+system = _detect_system()
+system_id = system  # Alias for compatibility
+machine_config = load_machine_config(system, paths.machines_yaml)
+cluster_type = _default_cluster_type(system)
 
 
 if __name__ == "__main__":

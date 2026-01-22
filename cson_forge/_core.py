@@ -1867,7 +1867,7 @@ class CstarSpecBuilder(BaseModel):
         self._cstar_simulation.build(rebuild=rebuild)
         return self._cstar_simulation
 
-    def run(self, run_time_settings: Optional[cstar_models.RuntimeParameterSet] = None, **kwargs):
+    def run(self, wallclock: str = "06:00:00", run_time_settings: Optional[cstar_models.RuntimeParameterSet] = None, **kwargs):
         """
         Run the model executable and advance blueprint to RUN stage.
         
@@ -1941,8 +1941,18 @@ class CstarSpecBuilder(BaseModel):
         self._stage = BlueprintStage.RUN
         self.persist()
         
-        # Run the simulation
-        return self._cstar_simulation.run()
+        # Get account from machine config for HPC systems
+        account_key = config.machine_config.account
+        queue_name = config.machine_config.queues["default"]
+        if account_key is None:
+            return self._cstar_simulation.run()
+        else:
+            return self._cstar_simulation.run(
+                account_key=account_key, 
+                wallclock=wallclock, 
+                queue_name=queue_name, 
+                job_name=self.casename,
+            )
     
     def pre_run(self) -> None:
         """
