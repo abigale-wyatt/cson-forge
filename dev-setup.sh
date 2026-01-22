@@ -307,55 +307,7 @@ else
 fi
 
 #--------------------------------------------------------
-# Local Python package setup
-#--------------------------------------------------------
-# Ensure environment is active
-# set +u is already active from initialization section
-if [[ "$PACKAGE_MANAGER" == "micromamba" ]]; then
-  if [[ -z "${CONDA_DEFAULT_ENV:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$KERNEL_NAME" ]]; then
-    # Shell hook should already be initialized, but ensure alias is set
-    if [[ "$MICROMAMBA_CMD" != "micromamba" ]]; then
-      alias micromamba="$MICROMAMBA_CMD"
-    fi
-    micromamba activate "$KERNEL_NAME"
-  fi
-else
-  if [[ -z "${CONDA_DEFAULT_ENV:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$KERNEL_NAME" ]]; then
-    source "$(conda info --base)/etc/profile.d/conda.sh"
-    conda activate "$KERNEL_NAME"
-  fi
-fi
-
-# Install local Python packages in editable mode
-# Check if any package needs to be installed
-NEEDS_INSTALL=false
-for package_name in "${LOCAL_PYTHON_PACKAGES[@]}"; do
-  if ! python - "$package_name" <<'PY'
-import importlib.util
-import sys
-package_name = sys.argv[1]
-sys.exit(0 if importlib.util.find_spec(package_name) else 1)
-PY
-  then
-    NEEDS_INSTALL=true
-    break
-  fi
-done
-
-if [[ "$NEEDS_INSTALL" == "true" ]]; then
-  echo "Installing local Python packages in editable mode..."
-  # Install from root directory (uses pyproject.toml or setup.py)
-  # This installs all packages defined in the project configuration
-  pip install -e .
-  echo "✓ Local package installation completed successfully!"
-else
-  for package_name in "${LOCAL_PYTHON_PACKAGES[@]}"; do
-    echo "✓ $package_name is already installed"
-  done
-fi
-
-#--------------------------------------------------------
-# C-Star setup
+# C-Star setup (install FIRST, as cson_forge depends on it)
 # This should be unnecessary once C-Star is released to 
 # conda-forge and available via conda install
 #--------------------------------------------------------
@@ -409,6 +361,91 @@ pip install -e .
 echo "✓ C-Star installation completed successfully!"
 
 popd > /dev/null
+
+#--------------------------------------------------------
+# Local Python package setup (install AFTER C-Star)
+#--------------------------------------------------------
+# Ensure environment is active
+# set +u is already active from initialization section
+if [[ "$PACKAGE_MANAGER" == "micromamba" ]]; then
+  if [[ -z "${CONDA_DEFAULT_ENV:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$KERNEL_NAME" ]]; then
+    # Shell hook should already be initialized, but ensure alias is set
+    if [[ "$MICROMAMBA_CMD" != "micromamba" ]]; then
+      alias micromamba="$MICROMAMBA_CMD"
+    fi
+    micromamba activate "$KERNEL_NAME"
+  fi
+else
+  if [[ -z "${CONDA_DEFAULT_ENV:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$KERNEL_NAME" ]]; then
+    source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate "$KERNEL_NAME"
+  fi
+fi
+
+# Install local Python packages in editable mode
+# Check if any package needs to be installed
+NEEDS_INSTALL=false
+MISSING_PACKAGES=()
+for package_name in "${LOCAL_PYTHON_PACKAGES[@]}"; do
+  if ! python - "$package_name" <<'PY'
+import importlib.util
+import sys
+package_name = sys.argv[1]
+spec = importlib.util.find_spec(package_name)
+# Check if the package is actually importable (not just a namespace)
+if spec is None or spec.origin is None:
+    sys.exit(1)
+# Verify it's actually installed (not just a namespace package)
+try:
+    __import__(package_name)
+    sys.exit(0)
+except ImportError:
+    sys.exit(1)
+PY
+  then
+    NEEDS_INSTALL=true
+    MISSING_PACKAGES+=("$package_name")
+  fi
+done
+
+if [[ "$NEEDS_INSTALL" == "true" ]]; then
+  echo "Installing local Python packages in editable mode..."
+  echo "  Missing packages: ${MISSING_PACKAGES[*]}"
+  # Install from root directory (uses pyproject.toml or setup.py)
+  # This installs all packages defined in the project configuration
+  pip install -e .
+  
+  # Verify installation succeeded
+  INSTALL_FAILED=false
+  for package_name in "${MISSING_PACKAGES[@]}"; do
+    if ! python - "$package_name" <<'PY'
+import importlib.util
+import sys
+package_name = sys.argv[1]
+try:
+    __import__(package_name)
+    sys.exit(0)
+except ImportError:
+    sys.exit(1)
+PY
+    then
+      echo "  ✓ $package_name installed successfully"
+    else
+      echo "  ✗ $package_name installation failed"
+      INSTALL_FAILED=true
+    fi
+  done
+  
+  if [[ "$INSTALL_FAILED" == "false" ]]; then
+    echo "✓ Local package installation completed successfully!"
+  else
+    echo "⚠ Warning: Some packages may not have installed correctly"
+  fi
+else
+  for package_name in "${LOCAL_PYTHON_PACKAGES[@]}"; do
+    echo "✓ $package_name is already installed"
+  done
+fi
 
 #--------------------------------------------------------
 # Jupyter kernel setup
