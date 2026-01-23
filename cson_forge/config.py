@@ -29,7 +29,7 @@ class DataPaths:
     Includes:
     - source_data
     - input_data
-    - run_dir
+    - scratch
     - blueprints
     - models_yaml
     - builds_yaml
@@ -39,7 +39,7 @@ class DataPaths:
     model_configs: Path
     source_data: Path
     input_data: Path
-    run_dir: Path
+    scratch: Path
     blueprints: Path
     models_yaml: Path
     builds_yaml: Path
@@ -112,7 +112,7 @@ def _detect_system() -> str:
 # --------------------------------------------------------
 
 # Now each layout returns 3 paths:
-# (source_data, input_data, run_dir)
+# (source_data, input_data, scratch)
 SystemLayoutFn = Callable[[Path, dict], Tuple[Path, Path, Path]]
 SYSTEM_LAYOUT_REGISTRY: Dict[str, SystemLayoutFn] = {}
 
@@ -122,7 +122,7 @@ def register_system(tag: str) -> Callable[[SystemLayoutFn], SystemLayoutFn]:
     Decorator to register a system-specific path layout.
 
     The decorated function must accept (home: Path, env: dict)
-    and return (source_data, input_data, run_dir).
+    and return (source_data, input_data, scratch).
     """
     def decorator(func: SystemLayoutFn) -> SystemLayoutFn:
         SYSTEM_LAYOUT_REGISTRY[tag] = func
@@ -140,8 +140,8 @@ def _layout_mac(home: Path, env: dict) -> Tuple[Path, Path, Path]:
     base = home / "cson-forge-data"
     source_data = base / "source-data"
     input_data = base / "input-data"
-    run_dir = base / "cson-forge-run"
-    return source_data, input_data, run_dir
+    scratch = base / "cson-forge-run"
+    return source_data, input_data, scratch
 
 
 @register_system("RCAC_anvil")
@@ -152,8 +152,8 @@ def _layout_RCAC_anvil(home: Path, env: dict) -> Tuple[Path, Path, Path]:
     base = work / "cson-forge-data"
     source_data = base / "source-data"
     input_data = base / USER / "input-data"
-    run_dir = scratch_root / "cson-forge-run"
-    return source_data, input_data, run_dir
+    scratch = scratch_root / "cson-forge-run"
+    return source_data, input_data, scratch
 
 
 @register_system("NERSC_perlmutter")
@@ -163,8 +163,8 @@ def _layout_NERSC_perlmutter(home: Path, env: dict) -> Tuple[Path, Path, Path]:
 
     source_data = base / "source-data"
     input_data = base / USER / "input-data"
-    run_dir = base / "cson-forge-run"
-    return source_data, input_data, run_dir
+    scratch = base / "cson-forge-run"
+    return source_data, input_data, scratch
 
 
 @register_system("unknown")
@@ -172,8 +172,8 @@ def _layout_unknown(home: Path, env: dict) -> Tuple[Path, Path, Path]:
     base = home / "cson-forge-data"
     source_data = base / "source-data"
     input_data = base / "input-data"
-    run_dir = base / "cson-forge-run"
-    return source_data, input_data, run_dir
+    scratch = base / "cson-forge-run"
+    return source_data, input_data, scratch
 
 
 # --------------------------------------------------------
@@ -192,7 +192,7 @@ def get_data_paths() -> DataPaths:
         system_tag, SYSTEM_LAYOUT_REGISTRY["unknown"]
     )
 
-    source_data, input_data, run_dir = layout_fn(home, env)
+    source_data, input_data, scratch = layout_fn(home, env)
 
     here = Path(__file__).resolve().parent
     model_configs = here / "model-configs"
@@ -202,7 +202,7 @@ def get_data_paths() -> DataPaths:
     machines_yaml = here / "machines.yml"
 
     # ensure everything exists
-    for p in (source_data, input_data, run_dir, blueprints_dir, model_configs):
+    for p in (source_data, input_data, scratch, blueprints_dir, model_configs):
         _ensure_dir(p)
 
     return DataPaths(
@@ -210,7 +210,7 @@ def get_data_paths() -> DataPaths:
         model_configs=model_configs,
         source_data=source_data,
         input_data=input_data,
-        run_dir=run_dir,
+        scratch=scratch,
         blueprints=blueprints_dir,
         models_yaml=models_yaml,
         builds_yaml=builds_yaml,

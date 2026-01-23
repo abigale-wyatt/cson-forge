@@ -319,6 +319,12 @@ def main(args: Optional[Iterable[str]] = None) -> int:
                         notebook_path = workflow_dir / notebook_path
                     if notebook_path.suffix == "":
                         notebook_path = notebook_path.with_suffix(".ipynb")
+                    
+                    # If notebook not found, try templates/ subdirectory
+                    if not notebook_path.exists():
+                        templates_path = workflow_dir / "templates" / notebook_path.name
+                        if templates_path.exists():
+                            notebook_path = templates_path
                     output_path = Path(entry.config.output_path)
                     if output_path.suffix == "":
                         output_path = output_path.with_suffix(".ipynb")

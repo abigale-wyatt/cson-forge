@@ -111,8 +111,8 @@ class dask_cluster(object):
 
     def _launch_dask_cluster(self, account, n_nodes, n_tasks_per_node, wallclock, queue_name):
         """Submit a SLURM job that starts a Dask scheduler and workers."""
-        # Use run_dir parent as scratch location, or fall back to environment variable
-        scratch_root = paths.run_dir.parent if hasattr(paths, 'run_dir') else Path(os.environ.get("SCRATCH", "/tmp"))
+        # Use scratch parent as scratch location, or fall back to environment variable
+        scratch_root = paths.scratch.parent if hasattr(paths, 'scratch') else Path(os.environ.get("SCRATCH", "/tmp"))
         path_dask = scratch_root / "dask"
         path_dask_str = str(path_dask)
         os.makedirs(path_dask_str, exist_ok=True)

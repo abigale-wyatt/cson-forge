@@ -8,6 +8,13 @@ from typing import Any, Dict, Optional, Union
 import yaml
 from pydantic import BaseModel, Field
 
+try:
+    import cartopy.crs as ccrs
+    CARTOPY_AVAILABLE = True
+except ImportError:
+    CARTOPY_AVAILABLE = False
+    ccrs = None
+
 
 
 class NotebookConfig(BaseModel):
@@ -68,6 +75,74 @@ class DaskClusterKwargs(BaseModel):
     n_tasks_per_node: Optional[int] = None
     wallclock: Optional[str] = None
     scheduler_file: Optional[str] = None
+
+
+class ProjectionConfig(BaseModel):
+    """Schema for cartopy projection configuration."""
+
+    type: str = Field(..., description="Projection type (e.g., 'LambertConformal')")
+    kwargs: Dict[str, Any] = Field(default_factory=dict, description="Keyword arguments for the projection constructor")
+    
+    @classmethod
+    def model_validate(cls, obj: Any):
+        """Override to ensure kwargs is properly handled."""
+        if isinstance(obj, dict):
+            # Ensure kwargs exists and is a dict
+            if "kwargs" not in obj:
+                obj["kwargs"] = {}
+            elif obj.get("kwargs") is None:
+                obj["kwargs"] = {}
+        return super().model_validate(obj)
+
+
+class DomainVisualizationSettings(BaseModel):
+    """Schema for domain-specific visualization settings."""
+
+    projection: ProjectionConfig = Field(..., description="Cartopy projection configuration")
+    
+    @property
+    def projection_kwargs(self) -> Dict[str, Any]:
+        """Return projection keyword arguments as a dictionary for use with cartopy."""
+        return self.projection.kwargs
+    
+    @property
+    def projection_object(self) -> Any:
+        """Return instantiated cartopy projection object."""
+        if not CARTOPY_AVAILABLE:
+            raise ImportError("cartopy is required to instantiate projection objects")
+        
+        projection_type = self.projection.type
+        if not hasattr(ccrs, projection_type):
+            raise ValueError(f"Unknown projection type: {projection_type}. Available types: {[attr for attr in dir(ccrs) if not attr.startswith('_') and isinstance(getattr(ccrs, attr), type)]}")
+        
+        ccrs_proj_func = getattr(ccrs, projection_type)
+        return ccrs_proj_func(**self.projection.kwargs)
+
+
+class VariableVisualizationSettings(BaseModel):
+    """Schema for variable-specific visualization settings."""
+
+    cmap: str = Field(..., description="Colormap name (e.g., 'curl')")
+    dc: float = Field(..., description="Colorbar step size")
+    cmin: float = Field(..., description="Minimum value for colorbar")
+    cmax: float = Field(..., description="Maximum value for colorbar")
+
+
+class VisualizationSettings(BaseModel):
+    """Schema for visualization settings configuration."""
+
+    domains: Dict[str, DomainVisualizationSettings] = Field(
+        ..., description="Dictionary mapping domain names to their visualization settings"
+    )
+    variables: Dict[str, VariableVisualizationSettings] = Field(
+        ..., description="Dictionary mapping variable names to their visualization settings"
+    )
+    
+    def get_domain_settings(self, domain_name: str) -> DomainVisualizationSettings:
+        """Get visualization settings for a specific domain."""
+        if domain_name not in self.domains:
+            raise ValueError(f"Domain '{domain_name}' not found in settings. Available domains: {list(self.domains.keys())}")
+        return self.domains[domain_name]
 
 
 class AppConfig(BaseModel):
@@ -240,3 +315,55 @@ def load_roms_tools_object(
     if not hasattr(cls, "from_yaml"):
         raise ValueError(f"roms_tools.{class_name} has no from_yaml method.")
     return cls.from_yaml(str(yaml_path_obj))
+
+
+def load_visualization_settings(path: Union[Path, str]) -> VisualizationSettings:
+    """
+    Load visualization settings from a YAML file.
+    
+    Parameters
+    ----------
+    path : Path or str
+        Path to the visualization settings YAML file.
+        
+    Returns
+    -------
+    VisualizationSettings
+        Visualization settings containing domains and variables configuration.
+    """
+    path_obj = Path(path)
+    raw = load_yaml_params(path_obj)
+    
+    if not isinstance(raw, dict):
+        raise ValueError("Visualization settings must be a dictionary.")
+    
+    # Parse domains
+    domains_raw = raw.get("domains", {})
+    if not isinstance(domains_raw, dict):
+        raise ValueError("'domains' must be a dictionary mapping domain names to settings.")
+    
+    domains: Dict[str, DomainVisualizationSettings] = {}
+    for domain_name, domain_config in domains_raw.items():
+        if not isinstance(domain_config, dict):
+            raise ValueError(f"Settings for domain '{domain_name}' must be a dictionary.")
+        # Debug: Check if projection kwargs are in the raw data
+        if "projection" in domain_config:
+            projection_raw = domain_config["projection"]
+            if isinstance(projection_raw, dict) and "kwargs" in projection_raw:
+                # Ensure kwargs is a dict (not None or empty)
+                if projection_raw["kwargs"] is None:
+                    projection_raw["kwargs"] = {}
+        domains[domain_name] = DomainVisualizationSettings.model_validate(domain_config)
+    
+    # Parse variables
+    variables_raw = raw.get("variables", {})
+    if not isinstance(variables_raw, dict):
+        raise ValueError("'variables' must be a dictionary mapping variable names to settings.")
+    
+    variables: Dict[str, VariableVisualizationSettings] = {}
+    for variable_name, variable_config in variables_raw.items():
+        if not isinstance(variable_config, dict):
+            raise ValueError(f"Settings for variable '{variable_name}' must be a dictionary.")
+        variables[variable_name] = VariableVisualizationSettings.model_validate(variable_config)
+    
+    return VisualizationSettings(domains=domains, variables=variables)

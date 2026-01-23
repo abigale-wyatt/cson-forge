@@ -180,12 +180,8 @@ class BlueprintCatalog:
             - description: Blueprint description
             - start_time: Simulation start time (valid_start_date)
             - end_time: Simulation end time (valid_end_date)
-            - np_eta: Number of processors in eta direction (partitioning.n_procs_y)
-            - np_xi: Number of processors in xi direction (partitioning.n_procs_x)
-            - grid_kwargs: Dictionary of grid parameters (from _grid.yml if available)
             - blueprint_path: Path to the blueprint YAML file
             - grid_yaml_path: Path to the grid YAML file (_grid.yml) if found
-            - input_data_dir: Path to input data directory (from grid.data[0].location)
             - stage: Blueprint stage
         
         Notes
@@ -215,38 +211,15 @@ class BlueprintCatalog:
                 start_time = blueprint.get("valid_start_date")
                 end_time = blueprint.get("valid_end_date")
                 
-                # Extract partitioning
-                partitioning = blueprint.get("partitioning", {})
-                np_xi = partitioning.get("n_procs_x") if isinstance(partitioning, dict) else None
-                np_eta = partitioning.get("n_procs_y") if isinstance(partitioning, dict) else None
-                
                 # Extract description
                 description = blueprint.get("description")
                 
-                # Try to find and load grid YAML file
+                # Try to find grid YAML file
                 grid_yaml_path = None
-                grid_kwargs = None
                 # Look for _grid.yml in the same directory as the blueprint
                 grid_yaml_path = bp_file.parent / "_grid.yml"
-                if grid_yaml_path.exists():
-                    try:
-                        grid_kwargs = self.load_grid_kwargs(grid_yaml_path)
-                    except (FileNotFoundError, KeyError, ValueError) as e:
-                        # Grid YAML might not exist or have different format, that's OK
-                        pass
-                
-                # Extract input data directory from grid location
-                input_data_dir = None
-                grid_data = blueprint.get("grid", {})
-                if isinstance(grid_data, dict):
-                    data_list = grid_data.get("data", [])
-                    if data_list and isinstance(data_list[0], dict):
-                        grid_location = data_list[0].get("location")
-                        if grid_location:
-                            try:
-                                input_data_dir = Path(grid_location).parent
-                            except Exception:
-                                pass
+                if not grid_yaml_path.exists():
+                    grid_yaml_path = None
                 
                 # Determine stage from filename
                 file_stage = None
@@ -266,12 +239,8 @@ class BlueprintCatalog:
                     "description": description,
                     "start_time": start_time,
                     "end_time": end_time,
-                    "np_eta": np_eta,
-                    "np_xi": np_xi,
-                    "grid_kwargs": grid_kwargs,
                     "blueprint_path": bp_file,
                     "grid_yaml_path": grid_yaml_path if grid_yaml_path and grid_yaml_path.exists() else None,
-                    "input_data_dir": str(input_data_dir) if input_data_dir else None,
                     "stage": file_stage,
                 })
                 

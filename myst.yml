@@ -48,11 +48,14 @@ project:
       children:      
         - file: docs/catalog.ipynb
 
-    - title: Analysis
+    - title: Skill Assessment 
       children:
-        - file: workflows/analysis/index.md
-        - file: workflows/analysis/cson-plot.ipynb
+        - pattern: workflows/skill-assessment/outputs/papermill/*
     
+    - title: Visualization 
+      children:
+        - pattern: workflows/visualization/outputs/papermill/*
+
     - title: Reference
       children:
         - file: docs/reference-machines.md      

@@ -233,7 +233,7 @@ class CstarSpecBuilder(BaseModel):
     @property
     def run_output_dir(self) -> Path:
         """Return the output directory path."""
-        return config.paths.run_dir / self.casename
+        return config.paths.scratch / self.casename
     
     @property
     def default_runtime_params(self) -> cstar_models.RuntimeParameterSet:

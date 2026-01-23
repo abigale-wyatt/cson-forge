@@ -8,12 +8,13 @@ dask_cluster_kwargs:
 
 notebooks:
   - title: C-SON Skill Assessment
-    use_dask_cluster: false
-    name: cson-skill-assessment
-    description: "C-SON Skill Assessment"
+    name: skill-assessment
+    use_dask_cluster: false    
+    description: "Comparison of model solutions to observational metrics."
     children:
-    - compare-to-glodap.ipynb:
+    - pm_compare-to-glodap.ipynb:
       parameters:
         domain_name: "CCS-12km"
-        model_files: null
-      output_path: executed/papermill/compare-to-glodap_CCS-12km.ipynb
+        grid_name: "ccs-12km"
+        model_name: "cson_roms-marbl_v0.1"
+      output_path: outputs/papermill/pm_compare-to-glodap_cson_roms-marbl_v0.1_ccs-12km.ipynb
