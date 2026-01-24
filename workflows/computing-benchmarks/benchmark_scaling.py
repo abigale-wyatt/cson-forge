@@ -46,13 +46,6 @@ def main():
     )
     
     parser.add_argument(
-        "--poll-interval",
-        type=int,
-        default=30,
-        help="Polling interval in seconds for checking execution status (default: 30)",
-    )
-    
-    parser.add_argument(
         "--generate-only",
         action="store_true",
         help="Only generate domains, do not run simulations",
@@ -83,7 +76,6 @@ def main():
     if args.verbose:
         print(f"Using domains file: {domains_file}")
         print(f"Clobber inputs: {args.clobber_inputs}")
-        print(f"Poll interval: {args.poll_interval} seconds")
         print(f"Generate only: {args.generate_only}")
         print()
     

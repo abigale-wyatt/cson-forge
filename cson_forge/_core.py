@@ -257,7 +257,7 @@ class CstarSpecBuilder(BaseModel):
     @property
     def blueprint_dir(self) -> Path:
         """Return the blueprint directory path."""
-        return config.paths.blueprints / self.name / config.system_id
+        return config.paths.blueprints / config.system_id / self.name 
 
     @property
     def compile_time_code_dir(self) -> Path:
