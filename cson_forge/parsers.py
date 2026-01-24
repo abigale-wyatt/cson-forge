@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import re
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -367,3 +370,157 @@ def load_visualization_settings(path: Union[Path, str]) -> VisualizationSettings
         variables[variable_name] = VariableVisualizationSettings.model_validate(variable_config)
     
     return VisualizationSettings(domains=domains, variables=variables)
+
+
+def parse_slurm_job_id(file_path: Union[str, Path]) -> Optional[str]:
+    """
+    Search for SLURM Job ID line in a file and return the job ID.
+    
+    Parameters
+    ----------
+    file_path : str or Path
+        Path to the log file to search
+        
+    Returns
+    -------
+    str or None
+        The SLURM job ID if found, None otherwise
+        
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> job_id = parse_slurm_job_id("logfile.out")
+    >>> print(f"SLURM Job ID: {job_id}")
+    """
+    file_path = Path(file_path)
+    if not file_path.exists():
+        return None
+    
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+    
+    for line in lines:
+        if "SLURM Job ID:" in line:
+            # Extract job ID using regex
+            match = re.search(r'SLURM Job ID:\s*(\d+)', line)
+            if match:
+                return match.group(1)
+    
+    return None
+
+
+def _tres_count(tres_list: list[dict[str, Any]] | None, tres_type: str) -> Optional[int]:
+    """Return integer count for a given TRES type (e.g., 'cpu', 'mem') from a Slurm TRES list."""
+    for item in (tres_list or []):
+        if item.get("type") == tres_type:
+            try:
+                return int(item.get("count"))
+            except Exception:
+                return None
+    return None
+
+
+def _job_is_completed(job: Dict[str, Any]) -> bool:
+    state = job.get("state") or {}
+    current = state.get("current") or []
+    # current is typically a list like ["COMPLETED"]
+    return "COMPLETED" in current
+
+
+def sacct_summary(jobid: int | str, *, model_step_name: str = "roms") -> Dict[str, Any]:
+    """
+    Return a minimal, extensible summary of a Slurm job from `sacct --json`.
+
+    Returned fields (top-level):
+      - elapsed_time: int seconds (model step elapsed)
+      - ntasks: int (model step tasks.count)
+      - allocated_cores: int (model step allocated cpu TRES)
+      - allocated_core_hours: float | None (only if COMPLETED)
+      - ntasks_core_hours: float | None (only if COMPLETED)
+      - memory_* fields (allocated + max/avg, if available in JSON)
+      - sacct_json: full raw JSON payload (for extensibility/debug)
+
+    Notes:
+      - Core-hours are only returned if the *job* status is COMPLETED.
+      - The summary focuses on the model step (default: step name "roms").
+    """
+    jobid = str(jobid)
+    cmd = ["sacct", "--json", "-j", jobid]
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"sacct --json failed (rc={proc.returncode}) for jobid={jobid}\nSTDERR:\n{proc.stderr.strip()}"
+        )
+
+    payload = json.loads(proc.stdout)
+    jobs = payload.get("jobs") or []
+    if not jobs:
+        raise RuntimeError(f"No jobs returned by sacct for jobid={jobid}")
+
+    # Prefer exact job_id match; otherwise first entry.
+    job: Dict[str, Any] = next((j for j in jobs if str(j.get("job_id")) == jobid), jobs[0])
+
+    completed = _job_is_completed(job)
+
+    # Identify the model step.
+    steps = job.get("steps") or []
+    model_step: Optional[Dict[str, Any]] = next(
+        (s for s in steps if (s.get("step") or {}).get("name") == model_step_name),
+        None,
+    )
+    # Fallback: pick ".0" if present
+    if model_step is None:
+        model_step = next(
+            (s for s in steps if isinstance((s.get("step") or {}).get("id"), str) and (s.get("step") or {}).get("id", "").endswith(".0")),
+            None,
+        )
+
+    if model_step is None:
+        raise RuntimeError(f"Could not find model step {model_step_name!r} (or a .0 fallback) for jobid={jobid}")
+
+    # Extract core accounting from the model step.
+    step_time = model_step.get("time") or {}
+    elapsed_seconds = step_time.get("elapsed")
+    elapsed_seconds = int(elapsed_seconds) if elapsed_seconds is not None else None
+
+    ntasks = (model_step.get("tasks") or {}).get("count")
+    ntasks = int(ntasks) if ntasks is not None else None
+
+    tres = model_step.get("tres") or {}
+    allocated_cores = _tres_count(tres.get("allocated"), "cpu")
+
+    # Memory: TRES units vary by site/version. We return raw counts and defer unit interpretation.
+    # - allocated mem: from tres.allocated where type == "mem"
+    # - requested max/avg mem: from tres.requested.average/max where type == "mem"
+    # - max/avg observed memory sometimes appears under "tres.requested.max/min" (already in your sample).
+    allocated_mem = _tres_count(tres.get("allocated"), "mem")
+    requested_mem_avg = _tres_count((tres.get("requested") or {}).get("average"), "mem") if isinstance(tres.get("requested"), dict) else None
+    requested_mem_max = _tres_count((tres.get("requested") or {}).get("max"), "mem") if isinstance(tres.get("requested"), dict) else None
+    requested_mem_min = _tres_count((tres.get("requested") or {}).get("min"), "mem") if isinstance(tres.get("requested"), dict) else None
+
+    # Compute core-hours only if job is COMPLETED.
+    allocated_core_hours = None
+    ntasks_core_hours = None
+    if completed and elapsed_seconds is not None:
+        if allocated_cores is not None:
+            allocated_core_hours = (allocated_cores * elapsed_seconds) / 3600.0
+        if ntasks is not None:
+            ntasks_core_hours = (ntasks * elapsed_seconds) / 3600.0
+
+    summary: Dict[str, Any] = {
+        "jobid": jobid,
+        "status": (job.get("state") or {}).get("current"),
+        "elapsed_time": elapsed_seconds,
+        "ntasks": ntasks,
+        "allocated_cores": allocated_cores,
+        "allocated_core_hours": allocated_core_hours,
+        "ntasks_core_hours": ntasks_core_hours,
+        # memory-related fields (raw counts; unit interpretation can be added later)
+        "allocated_mem": allocated_mem,
+        "requested_mem_avg": requested_mem_avg,
+        "requested_mem_max": requested_mem_max,
+        "requested_mem_min": requested_mem_min,
+        # extensibility/debug
+        "sacct_json": payload,
+    }
+    return summary
