@@ -318,8 +318,20 @@ if [ -d "$REPO_DIR" ]; then
   echo "C-Star repository already exists. Updating..."
   cd "$REPO_DIR"
   git fetch origin
-  git checkout "$BRANCH"
-  git pull origin "$BRANCH"
+  # Check if branch exists locally
+  if git show-ref --verify --quiet refs/heads/"$BRANCH"; then
+    # Branch exists locally, checkout and pull
+    git checkout "$BRANCH"
+    git pull origin "$BRANCH"
+  elif git show-ref --verify --quiet refs/remotes/origin/"$BRANCH"; then
+    # Branch exists remotely but not locally, checkout with tracking
+    git checkout -b "$BRANCH" origin/"$BRANCH"
+  else
+    echo "Error: Branch '$BRANCH' not found in repository."
+    echo "Available branches:"
+    git branch -r | head -10
+    exit 1
+  fi
   cd ..
 else
   echo "Cloning C-Star repository..."
