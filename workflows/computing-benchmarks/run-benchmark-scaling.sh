@@ -49,6 +49,27 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 # Activate environment
 conda activate "$ENV_NAME"
 
+# Ensure we use the conda environment's Python (not system Python)
+# Get the Python executable from the activated environment
+PYTHON_EXE="$(which python)"
+if [[ -z "$PYTHON_EXE" ]] || [[ ! -f "$PYTHON_EXE" ]]; then
+    # Fallback: use Python from CONDA_PREFIX
+    if [[ -n "${CONDA_PREFIX:-}" ]] && [[ -f "$CONDA_PREFIX/bin/python" ]]; then
+        PYTHON_EXE="$CONDA_PREFIX/bin/python"
+    else
+        echo "Error: Could not find Python in conda environment $ENV_NAME" >&2
+        exit 1
+    fi
+fi
+
+# Clear PYTHONPATH to avoid conflicts with system-installed packages
+# The conda environment's site-packages should be in sys.path automatically
+unset PYTHONPATH
+
+echo "Using Python: $PYTHON_EXE"
+echo "Python version: $($PYTHON_EXE --version)"
+echo "CONDA_PREFIX: ${CONDA_PREFIX:-not set}"
+
 # Restore strict error checking
 set -u
 
@@ -62,7 +83,7 @@ for ensemble_id in 2 3 4; do
     echo "Current directory: $(pwd)"
     echo "=========================================="
     
-    python "$SCRIPT_DIR/benchmark_scaling.py" \
+    "$PYTHON_EXE" "$SCRIPT_DIR/benchmark_scaling.py" \
         --ensemble-id "${ensemble_id}" \
         --domains-file "$SCRIPT_DIR/domains-bm-scaling.yml" \
         ${clobber_inputs_flag}
