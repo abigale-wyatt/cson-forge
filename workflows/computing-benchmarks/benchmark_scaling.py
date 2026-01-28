@@ -52,13 +52,6 @@ def main():
     )
     
     parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Enable verbose output",
-    )
-    
-    parser.add_argument(
         "--ensemble-id",
         type=int,
         default=None,
@@ -80,13 +73,26 @@ def main():
         print(f"Error: Domains file not found: {domains_file}", file=sys.stderr)
         sys.exit(1)
     
-    if args.verbose:
-        print(f"Using domains file: {domains_file}")
-        print(f"Clobber inputs: {args.clobber_inputs}")
-        print(f"Generate only: {args.generate_only}")
-        if args.ensemble_id is not None:
-            print(f"Ensemble ID: {args.ensemble_id}")
-        print()
+    # Always print verbose information
+    print(f"Using domains file: {domains_file}")
+    print(f"Clobber inputs: {args.clobber_inputs}")
+    print(f"Generate only: {args.generate_only}")
+    if args.ensemble_id is not None:
+        print(f"Ensemble ID: {args.ensemble_id}")
+    print()
+    
+    # Report system configuration
+    print("System Configuration:")
+    print(f"  System ID: {cson_forge.config.system_id}")
+    print("  Paths:")
+    paths = cson_forge.config.paths
+    print(f"    here: {paths.here}")
+    print(f"    source_data: {paths.source_data}")
+    print(f"    input_data: {paths.input_data}")
+    print(f"    scratch: {paths.scratch}")
+    print(f"    blueprints: {paths.blueprints}")
+    print(f"    model_configs: {paths.model_configs}")
+    print()
     
     try:
         # Initialize engine

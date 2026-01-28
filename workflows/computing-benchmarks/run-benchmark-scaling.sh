@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=benchmark-scaling
 #SBATCH --partition=shared
-#SBATCH --output=benchmark-scaling-%j.out
-#SBATCH --error=benchmark-scaling-%j.err
+#SBATCH --output=output/logs/benchmark-scaling-%j.out
+#SBATCH --error=output/logs/benchmark-scaling-%j.err
 #SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -20,6 +20,11 @@ else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
 cd "$SCRIPT_DIR"
+
+# Create output/logs directory if it doesn't exist
+# Note: SLURM will create the directory when writing output files, but creating it
+# here ensures it exists for any other operations
+mkdir -p output/logs
 
 # Verify we're in the right directory and files exist
 if [[ ! -f "benchmark_scaling.py" ]]; then
