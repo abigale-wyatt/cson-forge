@@ -9,8 +9,8 @@
 #SBATCH --mem=16G
 #SBATCH --account=ees250129
 
-# Exit on error
-set -euo pipefail
+# Exit on error (but allow unset variables for conda/micromamba operations)
+set -eo pipefail
 
 # Get the directory where this script is located
 # Use SLURM_SUBMIT_DIR if available (set by sbatch), otherwise use script location
@@ -35,11 +35,22 @@ if [[ ! -f "benchmark_scaling.py" ]]; then
     exit 1
 fi
 
-# Activate conda environment if available
-if command -v conda >/dev/null 2>&1; then
-    source "$(conda info --base)/etc/profile.d/conda.sh"
-    conda activate cson-forge-v0 2>/dev/null || true
-fi
+# Activate conda environment
+# Allow unset variables for conda operations
+set +u
+ENV_NAME="cson-forge-v0"
+
+# Load conda via module system
+module load conda
+
+# Initialize conda for this shell session
+source "$(conda info --base)/etc/profile.d/conda.sh"
+
+# Activate environment
+conda activate "$ENV_NAME"
+
+# Restore strict error checking
+set -u
 
 clobber_inputs_flag=
 #clobber_inputs_flag="--clobber-inputs"
