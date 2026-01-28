@@ -13,8 +13,22 @@
 set -euo pipefail
 
 # Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Use SLURM_SUBMIT_DIR if available (set by sbatch), otherwise use script location
+if [[ -n "${SLURM_SUBMIT_DIR:-}" ]]; then
+    SCRIPT_DIR="$SLURM_SUBMIT_DIR"
+else
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
 cd "$SCRIPT_DIR"
+
+# Verify we're in the right directory and files exist
+if [[ ! -f "benchmark_scaling.py" ]]; then
+    echo "Error: benchmark_scaling.py not found in $SCRIPT_DIR" >&2
+    echo "Current directory: $(pwd)" >&2
+    echo "Files in directory:" >&2
+    ls -la >&2
+    exit 1
+fi
 
 # Activate conda environment if available
 if command -v conda >/dev/null 2>&1; then
@@ -29,11 +43,12 @@ clobber_inputs_flag=
 for ensemble_id in 2 3 4; do
     echo "=========================================="
     echo "Running benchmark scaling for ensemble_id=${ensemble_id}"
+    echo "Current directory: $(pwd)"
     echo "=========================================="
     
-    python benchmark_scaling.py \
+    python "$SCRIPT_DIR/benchmark_scaling.py" \
         --ensemble-id "${ensemble_id}" \
-        --domains-file domains-bm-scaling.yml \
+        --domains-file "$SCRIPT_DIR/domains-bm-scaling.yml" \
         ${clobber_inputs_flag}
     
     echo ""
