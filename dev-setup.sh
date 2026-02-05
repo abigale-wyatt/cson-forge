@@ -296,75 +296,7 @@ else
 fi
 
 #--------------------------------------------------------
-# C-Star setup (install FIRST, as cson_forge depends on it)
-# This should be unnecessary once C-Star is released to 
-# conda-forge and available via conda install
-#--------------------------------------------------------
-REPO_URL="https://github.com/CWorthy-Ocean/C-Star.git"
-BRANCH="main"
-
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CODE_ROOT="${SCRIPT_DIR}/external"
-REPO_DIR="$CODE_ROOT/C-Star"
-
-# Create code root directory if it doesn't exist
-mkdir -p "$CODE_ROOT"
-
-pushd "$CODE_ROOT" > /dev/null
-
-# Clone or update the repository
-if [ -d "$REPO_DIR" ]; then
-  echo "C-Star repository already exists. Updating..."
-  cd "$REPO_DIR"
-  git fetch origin
-  # Check if branch exists locally
-  if git show-ref --verify --quiet refs/heads/"$BRANCH"; then
-    # Branch exists locally, checkout and pull
-    git checkout "$BRANCH"
-    git pull origin "$BRANCH"
-  elif git show-ref --verify --quiet refs/remotes/origin/"$BRANCH"; then
-    # Branch exists remotely but not locally, checkout with tracking
-    git checkout -b "$BRANCH" origin/"$BRANCH"
-  else
-    echo "Error: Branch '$BRANCH' not found in repository."
-    echo "Available branches:"
-    git branch -r | head -10
-    exit 1
-  fi
-  cd ..
-else
-  echo "Cloning C-Star repository..."
-  git clone -b "$BRANCH" "$REPO_URL" "$REPO_DIR"
-fi
-
-# Install C-Star in editable mode
-# Ensure environment is active
-# set +u is already active from initialization section
-if [[ "$PACKAGE_MANAGER" == "micromamba" ]]; then
-  if [[ -z "${CONDA_DEFAULT_ENV:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$KERNEL_NAME" ]]; then
-    # Shell hook should already be initialized, but ensure alias is set
-    if [[ "$MICROMAMBA_CMD" != "micromamba" ]]; then
-      alias micromamba="$MICROMAMBA_CMD"
-    fi
-    micromamba activate "$KERNEL_NAME"
-  fi
-else
-  if [[ -z "${CONDA_DEFAULT_ENV:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$KERNEL_NAME" ]]; then
-    source "$(conda info --base)/etc/profile.d/conda.sh"
-    conda activate "$KERNEL_NAME"
-  fi
-fi
-
-echo "Installing C-Star in editable mode..."
-cd "$REPO_DIR"
-pip install -e .
-echo "✓ C-Star installation completed successfully!"
-
-popd > /dev/null
-
-#--------------------------------------------------------
-# Local Python package setup (install AFTER C-Star)
+# Local Python package setup
 #--------------------------------------------------------
 # Ensure environment is active
 # set +u is already active from initialization section
@@ -472,7 +404,6 @@ echo ""
 echo "✓ Environment setup completed successfully!"
 echo "  Package manager: $PACKAGE_MANAGER"
 echo "  Environment: $KERNEL_NAME"
-echo "  C-Star repository: $REPO_DIR"
 
 # Restore strict variable checking now that all conda operations are complete
 set -u
