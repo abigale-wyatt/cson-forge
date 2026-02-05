@@ -58,35 +58,13 @@ jobs:
         echo "$HOME/bin" >> $GITHUB_PATH
         echo "Created conda wrapper at $HOME/bin/conda"
         
-    - name: Install cson_forge and C-Star
+    - name: Install cson_forge
       shell: bash -l {0}
       working-directory: ${{ github.workspace }}
       run: |
-        # Activate the micromamba environment
         eval "$(micromamba shell hook --shell bash)"
         micromamba activate cson-forge-v0
-        
-        # Install cson_forge in editable mode (needed for tests to see source changes)
-        pip install -e .
-        
-        # Install C-Star (required by tests that import cstar.orchestration.models)
-        # Skip Jupyter kernel setup and compiler installation for CI
-        REPO_URL="https://github.com/CWorthy-ocean/C-Star.git"
-        BRANCH="main"
-        CODE_ROOT="${{ github.workspace }}/external"
-        REPO_DIR="$CODE_ROOT/C-Star"
-        
-        mkdir -p "$CODE_ROOT"
-        if [ -d "$REPO_DIR" ]; then
-          cd "$REPO_DIR"
-          git fetch origin
-          git checkout "$BRANCH"
-          git pull origin "$BRANCH"
-        else
-          git clone -b "$BRANCH" "$REPO_URL" "$REPO_DIR"
-        fi
-        
-        cd "$REPO_DIR"
+        # C-Star and roms-tools come from environment.yml (pip section)
         pip install -e .
         
     - name: Run tests

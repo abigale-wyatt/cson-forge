@@ -37,12 +37,13 @@ dependencies:
   - pyyaml>=6.0
   - rasterio
   - rioxarray
-  - roms-tools==3.4.0
   - scipy
   - seawater
   - xarray
   - xgcm
   - zarr
-  - pip
-  
-    
+  - pip:
+    # roms-tools from GitHub: use branch (e.g. @main) or commit hash (e.g. @abc123f)
+    - git+https://github.com/CWorthy-ocean/roms-tools.git@main
+    # cstar-ocean from GitHub: use branch (e.g. @main) or commit hash (e.g. @abc123f)    
+    - git+https://github.com/CWorthy-ocean/C-Star.git@main

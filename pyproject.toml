@@ -25,7 +25,6 @@ dependencies = [
     "jinja2",
     "pandas",
     "pyyaml>=6.0",
-    "roms-tools>=3.3.0",
     "copernicusmarine",
     "gdown",
     "cstar-ocean>=0.1.0",
