@@ -30,7 +30,7 @@ NEP-p25_deg:
   description: "Northeast Pacific 1/4 deg (nested)"
   model_name: "cson_roms-marbl_v0.1"
   grid_name: "NEP-p25_deg"
-  start_time: "2010-01-01"
+  start_time: "2010-01-02"
   end_time: "2010-01-10"
   grid_kwargs:
     nx: 208
@@ -63,7 +63,7 @@ GoA-p10_deg:
   description: "Gulf of Alaska 1/10 deg (nested)"
   model_name: "cson_roms-marbl_v0.1"
   grid_name: "GoA-p10_deg"
-  start_time: "2010-01-01"
+  start_time: "2010-01-03"
   end_time: "2010-01-10"
   grid_kwargs:
     nx: 208
