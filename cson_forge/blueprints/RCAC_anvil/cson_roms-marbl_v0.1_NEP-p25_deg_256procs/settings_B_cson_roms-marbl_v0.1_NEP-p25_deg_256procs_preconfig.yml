@@ -150,10 +150,10 @@ compile_time:
 run_time:
   roms.in:
     title:
-      casename: cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100101-20100110
+      casename: cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110
     time_stepping:
-      ntimes: 15552
-      dt: 50
+      ntimes: 14400
+      dt: 48
       ndtfast: 60
       ninfo: 1
     s_coord:
@@ -173,7 +173,7 @@ run_time:
       visc4: 0.0
       rho0: 1000.0
     output_root_name:
-      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100101-20100110/output/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100101-20100110
+      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/output/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110
     vertical_mixing:
       akv: 0.0
       akt_default: 0.0

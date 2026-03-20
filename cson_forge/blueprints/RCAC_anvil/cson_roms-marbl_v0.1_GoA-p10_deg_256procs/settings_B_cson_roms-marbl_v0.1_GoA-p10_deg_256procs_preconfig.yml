@@ -34,7 +34,7 @@ compile_time:
     ntrc_bio: 32
   ocean_vars:
     wrt_file_rst: true
-    output_period_rst: 43200
+    output_period_rst: 86400
     monthly_restarts: false
     nrpf_rst: 2
     wrt_file_his: false
@@ -150,9 +150,9 @@ compile_time:
 run_time:
   roms.in:
     title:
-      casename: cson_roms-marbl_v0.1_GoA-p10_deg_256procs_20100101-20100110
+      casename: cson_roms-marbl_v0.1_GoA-p10_deg_256procs_20100103-20100110
     time_stepping:
-      ntimes: 38880
+      ntimes: 30240
       dt: 20
       ndtfast: 60
       ninfo: 1
@@ -173,7 +173,7 @@ run_time:
       visc4: 0.0
       rho0: 1000.0
     output_root_name:
-      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_GoA-p10_deg_256procs_20100101-20100110/output/cson_roms-marbl_v0.1_GoA-p10_deg_256procs_20100101-20100110
+      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_GoA-p10_deg_256procs_20100103-20100110/output/cson_roms-marbl_v0.1_GoA-p10_deg_256procs_20100103-20100110
     vertical_mixing:
       akv: 0.0
       akt_default: 0.0

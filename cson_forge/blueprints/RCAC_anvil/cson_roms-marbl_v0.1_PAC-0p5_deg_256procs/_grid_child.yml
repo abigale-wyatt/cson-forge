@@ -1,5 +1,5 @@
 ---
-roms_tools_version: 3.5.1.dev6+g40b5a2ea3
+roms_tools_version: 3.5.1.dev10+gaad196018
 ---
 ParentGrid:
   nx: 208
@@ -35,7 +35,7 @@ ChildGrid:
   hmin: 5.0
   boundaries:
     south: true
-    east: true
+    east: false
     north: true
     west: true
   metadata:

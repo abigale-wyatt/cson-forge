@@ -2,7 +2,7 @@ title:
    cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-      960    900    60    1
+      8100    96    60    1
 
 MARBL_biogeochemistry: namelist  tracer_output_list   diagnostic_output_list
      marbl_in

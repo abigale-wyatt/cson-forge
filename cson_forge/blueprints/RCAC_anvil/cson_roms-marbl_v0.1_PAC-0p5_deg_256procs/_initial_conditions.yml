@@ -1,5 +1,5 @@
 ---
-roms_tools_version: 3.5.1.dev6+g40b5a2ea3
+roms_tools_version: 3.5.1.dev10+gaad196018
 ---
 Grid:
   nx: 208
@@ -39,5 +39,4 @@ InitialConditions:
     path: /anvil/projects/x-ees250129/cson-forge-data/source-data/UNIFIED_BGC/BGCdataset.nc
   model_reference_date: '2000-01-01T00:00:00'
   allow_flex_time: false
-  horizontal_chunk_size: 50
   bypass_validation: false

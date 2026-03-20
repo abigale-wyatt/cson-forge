@@ -2,7 +2,7 @@ name: cson_roms-marbl_v0.1_NEP-p25_deg_256procs
 description: Northeast Pacific 1/4 deg (nested)
 application: roms_marbl
 state: notset
-valid_start_date: '2010-01-01T00:00:00'
+valid_start_date: '2010-01-02T00:00:00'
 valid_end_date: '2010-01-10T00:00:00'
 code:
   roms:
@@ -57,7 +57,7 @@ initial_conditions:
   documentation: ''
   locked: false
   data:
-  - location: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_NEP-p25_deg_256procs/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_initial_conditions.nc
+  - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/initial_conditions_NEP-p25_from_PAC-0p5.nc
     partitioned: false
 grid:
   documentation: ''
@@ -69,13 +69,29 @@ forcing:
   boundary:
     documentation: ''
     locked: false
-    data: []
+    data:
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100101010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100102010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100103010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100104010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100105010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100106010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100107010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100108010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/child_files/child_bry.20100109010000.nc
+      partitioned: false
   surface:
     documentation: ''
     locked: false
     data:
-    - location: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_NEP-p25_deg_256procs/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_surface-physics_200912.nc
-      partitioned: false
     - location: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_NEP-p25_deg_256procs/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_surface-physics_201001.nc
       partitioned: false
     - location: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_NEP-p25_deg_256procs/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_surface-bgc_clim.nc
@@ -100,8 +116,8 @@ partitioning:
   n_procs_x: 16
   n_procs_y: 16
 model_params:
-  time_step: 50
+  time_step: 900
 runtime_params:
-  start_date: '2010-01-01T00:00:00'
+  start_date: '2010-01-02T00:00:00'
   end_date: '2010-01-10T00:00:00'
-  output_dir: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100101-20100110
+  output_dir: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110

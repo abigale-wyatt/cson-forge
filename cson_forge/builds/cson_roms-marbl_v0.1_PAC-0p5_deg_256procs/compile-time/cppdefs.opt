@@ -89,7 +89,7 @@
 
 #define MARBL
 
-#define DIAGNOSTICS
+# define DIAGNOSTICS
 
 #ifdef MARBL
 #  define MARBL_DIAGS
