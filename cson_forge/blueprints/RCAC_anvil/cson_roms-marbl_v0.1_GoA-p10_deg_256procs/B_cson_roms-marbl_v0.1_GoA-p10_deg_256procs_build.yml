@@ -57,7 +57,7 @@ initial_conditions:
   documentation: ''
   locked: false
   data:
-  - location:   
+  - location: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_GoA-p10_deg_256procs/cson_roms-marbl_v0.1_GoA-p10_deg_256procs_initial_conditions.nc
     partitioned: false
 grid:
   documentation: ''
@@ -69,9 +69,7 @@ forcing:
   boundary:
     documentation: ''
     locked: false
-    data:
-    - location: 
-      partitioned: false
+    data: []
   surface:
     documentation: ''
     locked: false
@@ -100,7 +98,7 @@ partitioning:
   n_procs_x: 16
   n_procs_y: 16
 model_params:
-  time_step: 900
+  time_step: 20
 runtime_params:
   start_date: '2010-01-03T00:00:00'
   end_date: '2010-01-10T00:00:00'

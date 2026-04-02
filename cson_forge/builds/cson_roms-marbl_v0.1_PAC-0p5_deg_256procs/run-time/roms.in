@@ -1,8 +1,8 @@
 title:
-   cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110
+   cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-      8100    96    60    1
+      6300    96    60    1
 
 MARBL_biogeochemistry: namelist  tracer_output_list   diagnostic_output_list
      marbl_in
@@ -16,7 +16,7 @@ grid:  filename
       /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_grid.nc
 
 forcing: filename
-      /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_surface-physics_200912.nc
+      /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_surface-physics_201001.nc
       /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_surface-bgc_clim.nc
       /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_boundary-physics_201001.nc
       /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_boundary-bgc_clim.nc
@@ -27,7 +27,7 @@ initial: NRREC  filename
       /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_initial_conditions.nc
 
 output_root_name:
-      /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/output/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110
+      /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110/output/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110
 
 lateral_visc:   VISC2,    VISC4    [m^2/sec for all]
                  0.0       0.0

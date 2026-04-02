@@ -2,7 +2,7 @@ name: cson_roms-marbl_v0.1_NEP-p25_deg_256procs
 description: Northeast Pacific 1/4 deg (nested)
 application: roms_marbl
 state: notset
-valid_start_date: '2010-01-02T00:00:00'
+valid_start_date: '2010-01-03T00:00:00'
 valid_end_date: '2010-01-10T00:00:00'
 code:
   roms:

@@ -69,7 +69,6 @@
 
 /* Open Boundary Conditions */
 #define OBC_WEST
-#define OBC_EAST
 #define OBC_NORTH
 #define OBC_SOUTH
 
