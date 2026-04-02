@@ -1,0 +1,44 @@
+---
+roms_tools_version: 3.5.1.dev10+gaad196018
+---
+ParentGrid:
+  nx: 1274
+  ny: 1698
+  size_x: 5088
+  size_y: 3816
+  center_lon: -134.5
+  center_lat: 42.1
+  rot: -16
+  N: 60
+  theta_s: 6.0
+  theta_b: 3.0
+  hc: 250.0
+  topography_source:
+    name: ETOPO5
+  mask_shapefile: null
+  hmin: 5.0
+ChildGrid:
+  nx: 960
+  ny: 640
+  size_x: 576
+  size_y: 384
+  center_lon: -125
+  center_lat: 49.2
+  rot: -30
+  N: 60
+  theta_s: 6.0
+  theta_b: 3.0
+  hc: 250.0
+  topography_source:
+    name: ETOPO5
+  mask_shapefile: null
+  hmin: 5.0
+  boundaries:
+    south: true
+    east: false
+    north: false
+    west: true
+  metadata:
+    prefix: child
+    period: 3600.0
+    include_bgc: false

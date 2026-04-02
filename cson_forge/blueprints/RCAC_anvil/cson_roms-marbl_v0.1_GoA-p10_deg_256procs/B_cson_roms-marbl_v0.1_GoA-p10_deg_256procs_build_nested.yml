@@ -57,7 +57,7 @@ initial_conditions:
   documentation: ''
   locked: false
   data:
-  - location:   
+  - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/initial_conditions_from_NEP-p25.nc
     partitioned: false
 grid:
   documentation: ''
@@ -70,7 +70,21 @@ forcing:
     documentation: ''
     locked: false
     data:
-    - location: 
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100102010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100103010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100104010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100105010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100106010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100107010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100108010000.nc
+      partitioned: false
+    - location: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_NEP-p25_deg_256procs_20100102-20100110/child_files/child_bry.20100109010000.nc
       partitioned: false
   surface:
     documentation: ''

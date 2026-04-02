@@ -1,9 +1,9 @@
-name: cson_roms-marbl_v0.1_NEP-p25_deg_256procs
-description: Northeast Pacific 1/4 deg (nested)
+name: cson_roms-marbl_v0.1_SS-600m_512procs
+description: Salish Sea 600m
 application: roms_marbl
 state: notset
-valid_start_date: '2010-01-03T00:00:00'
-valid_end_date: '2010-01-10T00:00:00'
+valid_start_date: '2024-01-01T00:00:00'
+valid_end_date: '2025-01-10T00:00:00'
 code:
   roms:
     documentation: ''
@@ -53,5 +53,5 @@ forcing:
 partitioning:
   documentation: ''
   locked: false
-  n_procs_x: 16
+  n_procs_x: 32
   n_procs_y: 16

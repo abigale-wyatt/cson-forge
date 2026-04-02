@@ -13,7 +13,7 @@ compile_time:
     output_period_avg_dia: 60
     nrpf_avg_dia: 1
     nbgc_flx: 2
-    interp_frc: 1
+    interp_frc: 0
   blk_frc:
     interp_frc: 0
   cppdefs:
@@ -23,10 +23,10 @@ compile_time:
     obc_south: true
     marbl: true
   param:
-    LLm: 512
-    MMm: 512
+    LLm: 960
+    MMm: 640
     N: 60
-    NP_XI: 16
+    NP_XI: 32
     NP_ETA: 16
     NSUB_X: 1
     NSUB_E: 1
@@ -87,9 +87,9 @@ compile_time:
     pot_tides: true
     ana_tides: false
   river_frc:
-    river_source: false
+    river_source: true
     analytical: false
-    nriv: 0
+    nriv: 4
     rvol_vname: river_volume
     rvol_tname: river_time
     rtrc_vname: river_tracer
@@ -150,30 +150,28 @@ compile_time:
 run_time:
   roms.in:
     title:
-      casename: cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110
+      casename: cson_roms-marbl_v0.1_SS-600m_512procs_20240101-20250110
     time_stepping:
-      ntimes: 6300
-      dt: 96
+      ntimes: 10800000
+      dt: 3
       ndtfast: 60
       ninfo: 1
     s_coord:
-      theta_s: null
-      theta_b: null
-      tcline: null
+      tcline: 250.0
+      theta_b: 3.0
+      theta_s: 6.0
     grid:
-      grid_file: null
+      grid_file: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_SS-600m_512procs/cson_roms-marbl_v0.1_SS-600m_512procs_grid.nc
     forcing:
-      surface_forcing_path: null
-      surface_forcing_bgc_path: null
-      boundary_forcing_path: null
-      boundary_forcing_bgc_path: null
-      river_path: null
+      surface_forcing_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_SS-600m_512procs/cson_roms-marbl_v0.1_SS-600m_512procs_surface-physics_202312.nc
+      surface_forcing_bgc_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_SS-600m_512procs/cson_roms-marbl_v0.1_SS-600m_512procs_surface-bgc_clim.nc
+      river_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_SS-600m_512procs/cson_roms-marbl_v0.1_SS-600m_512procs_river.nc
     lateral_visc:
       visc2: 0.0
       visc4: 0.0
       rho0: 1000.0
     output_root_name:
-      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110/output/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110
+      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_SS-600m_512procs_20240101-20250110/output/cson_roms-marbl_v0.1_SS-600m_512procs_20240101-20250110
     vertical_mixing:
       akv: 0.0
       akt_default: 0.0
@@ -191,4 +189,4 @@ run_time:
     ubind: 0.1
     initial:
       nrrec: 1
-      initial_file: null
+      initial_file: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_SS-600m_512procs/cson_roms-marbl_v0.1_SS-600m_512procs_initial_conditions.nc
