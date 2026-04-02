@@ -14,7 +14,7 @@
 .PHONY: all clean depend
 
 all:
-	rsync -a $(ROMS_ROOT)/src/*.F $(ROMS_ROOT)/src/*.h  Compile
+	rsync -a --ignore-missing-args $(ROMS_ROOT)/src/*.F $(ROMS_ROOT)/src/*.F90 $(ROMS_ROOT)/src/*.h  Compile
 	make show_tag
 	@rsync -a $(ROMS_ROOT)/src/*.opt Compile
 	@rsync -a $(ROMS_ROOT)/src/Makedefs.inc Compile
@@ -25,6 +25,7 @@ all:
 	cd Compile; make depend 2>/dev/null || :
 	cd Compile; make -j6; mv roms ..
 
+
 # note: "2>/dev/null || :" above is needed to suppress error
 #       stop if no .h or .F files in current directory.
 #       Also, makedepf90 in make depend can throw out strange
@@ -32,9 +33,9 @@ all:
 #       cppdefs.opt.
 
 # for adding git hash:
-tag := $(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
+tag := $(shell git rev-parse HEAD)
 show_tag:
-	@perl -i -pe 's/git_hash=.*/git_hash="$(tag)"/' Compile/add_git_hash.F
+	@perl -i -pe 's/git_hash=.*/git_hash="$(tag)"/' Compile/add_git_hash.*
 
 compile_clean:
 	rm -r Compile/ roms 2>/dev/null || :
@@ -42,21 +43,15 @@ compile_clean:
 work_clean:
 	rm -r Compile/ *.F *.h *.in *.sh *.nc roms 2>/dev/null || :
 
-code_check_clean:
-	@cd $(ROMS_ROOT)/Examples/Flux_frc        ; make compile_clean
-	@cd $(ROMS_ROOT)/Examples/Pipes_ana       ; make compile_clean
-	@cd $(ROMS_ROOT)/Examples/Pipes_real      ; make compile_clean
-	@cd $(ROMS_ROOT)/Examples/Rivers_ana      ; make compile_clean
-	@cd $(ROMS_ROOT)/Examples/Rivers_real     ; make compile_clean
-	@cd $(ROMS_ROOT)/Examples/Tracers_passive ; make compile_clean
-	@cd $(ROMS_ROOT)/Examples/WEC_real        ; make compile_clean
-
-
 copy_to_Work_dir:
 	cp -p *.F *.h *.in *.sh ../../Work 2>/dev/null || :
 
 nhmg:
-	cd $(ROMS_ROOT)/NHMG/src; make clean; cd .. ; make
+	cd $(ROMS_ROOT)/NHMG/src; make clean; make
+
+tools-roms:
+	cd $(ROMS_ROOT)/Tools-Roms/; make ;
+
 
 # The no-print suppress makes messages of entering/leaving directories
 MAKEFLAGS += --no-print-directory
