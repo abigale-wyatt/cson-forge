@@ -32,7 +32,6 @@ code:
     branch: na
     filter:
       files:
-      - Makefile
       - bgc.opt
       - blk_frc.opt
       - cdr_frc.opt

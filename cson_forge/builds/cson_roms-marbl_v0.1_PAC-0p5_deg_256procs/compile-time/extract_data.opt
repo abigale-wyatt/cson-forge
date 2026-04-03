@@ -7,7 +7,7 @@
       !
       !------------------------------
       logical,parameter,public :: do_extract = .true.
-      character(len=512) :: extract_file = '/anvil/projects/x-ees250129/PAC-0p5_deg_256procs_nesting.nc'
+      character(len=512) :: extract_file = 'nesting.nc'
       integer,parameter,public :: nrpf_extract = 24    ! number of records per output file
       integer,parameter :: edat_prec = nf90_double  ! Precision of output variables (nf90_float/nf90_double)
 

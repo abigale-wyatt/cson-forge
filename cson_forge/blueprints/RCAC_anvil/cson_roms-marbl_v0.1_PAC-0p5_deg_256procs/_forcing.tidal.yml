@@ -26,5 +26,5 @@ TidalForcing:
       h: /anvil/projects/x-ees250129/cson-forge-data/source-data/TPXO/TPXO10.v2/h_tpxo10.v2.nc
       u: /anvil/projects/x-ees250129/cson-forge-data/source-data/TPXO/TPXO10.v2/u_tpxo10.v2.nc
   ntides: 15
-  model_reference_date: '2010-01-03T00:00:00'
+  model_reference_date: '2010-01-01T00:00:00'
   bypass_validation: false

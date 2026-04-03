@@ -18,7 +18,7 @@ Grid:
   mask_shapefile: null
   hmin: 5.0
 SurfaceForcing:
-  start_time: '2010-01-03T00:00:00'
+  start_time: '2010-01-01T00:00:00'
   end_time: '2010-01-10T00:00:00'
   source:
     name: ERA5
