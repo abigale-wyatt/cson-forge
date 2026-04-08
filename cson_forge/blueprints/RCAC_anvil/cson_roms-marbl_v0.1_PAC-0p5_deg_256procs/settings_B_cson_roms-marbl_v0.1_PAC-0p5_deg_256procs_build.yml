@@ -18,7 +18,7 @@ compile_time:
     interp_frc: 0
   cppdefs:
     obc_west: true
-    obc_east: true
+    obc_east: false
     obc_north: true
     obc_south: true
     marbl: true
@@ -150,20 +150,20 @@ compile_time:
 run_time:
   roms.in:
     title:
-      casename: cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110
+      casename: cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110
     time_stepping:
-      ntimes: 8100
-      dt: 96
+      ntimes: 224
+      dt: 2700
       ndtfast: 60
       ninfo: 1
     s_coord:
-      tcline: 250.0
-      theta_b: 3.0
       theta_s: 6.0
+      theta_b: 3.0
+      tcline: 250.0
     grid:
       grid_file: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_grid.nc
     forcing:
-      surface_forcing_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_surface-physics_200912.nc
+      surface_forcing_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_surface-physics_201001.nc
       surface_forcing_bgc_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_surface-bgc_clim.nc
       boundary_forcing_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_boundary-physics_201001.nc
       boundary_forcing_bgc_path: /anvil/projects/x-ees250129/cson-forge-data/x-awyatt1/input-data/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_boundary-bgc_clim.nc
@@ -173,7 +173,7 @@ run_time:
       visc4: 0.0
       rho0: 1000.0
     output_root_name:
-      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110/output/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100101-20100110
+      output_root_name: /anvil/scratch/x-awyatt1/cson-forge-run/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110/output/cson_roms-marbl_v0.1_PAC-0p5_deg_256procs_20100103-20100110
     vertical_mixing:
       akv: 0.0
       akt_default: 0.0

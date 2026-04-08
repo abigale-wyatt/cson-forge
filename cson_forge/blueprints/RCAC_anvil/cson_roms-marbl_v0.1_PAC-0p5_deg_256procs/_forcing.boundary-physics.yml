@@ -18,18 +18,17 @@ Grid:
   mask_shapefile: null
   hmin: 5.0
 BoundaryForcing:
-  start_time: '2010-01-01T00:00:00'
+  start_time: '2010-01-03T00:00:00'
   end_time: '2010-01-10T00:00:00'
   boundaries:
     north: true
     south: true
-    east: true
+    east: false
     west: true
   source:
     name: GLORYS
     climatology: false
     path:
-    - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100101.nc
     - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100102.nc
     - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100103.nc
     - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100104.nc
@@ -39,6 +38,7 @@ BoundaryForcing:
     - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100108.nc
     - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100109.nc
     - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100110.nc
+    - /anvil/projects/x-ees250129/cson-forge-data/source-data/GLORYS_GLOBAL/cmems_mod_glo_phy_my_0.083deg_P1D-m_GLOBAL_20100111.nc
   type: physics
   apply_2d_horizontal_fill: false
   model_reference_date: '2000-01-01T00:00:00'
